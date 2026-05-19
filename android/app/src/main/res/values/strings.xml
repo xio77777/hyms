@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">HYMS康复训练</string>
+    <string name="title_activity_main">HYMS康复训练</string>
+    <string name="package_name">com.hyms.rehab</string>
+    <string name="custom_url_scheme">com.hyms.rehab</string>
+</resources>

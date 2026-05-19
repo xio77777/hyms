@@ -1,0 +1,113 @@
+import { useCallback, useEffect, useState } from 'react'
+import { useCanvas } from '@/hooks/useCanvas'
+import { useTrainingStore } from '@/store/trainingStore'
+import { renderTracking } from '@/renderers/TrackingRenderer'
+import { renderCalm } from '@/renderers/CalmRenderer'
+import { renderExcite } from '@/renderers/ExciteRenderer'
+import { renderColorCarousel } from '@/renderers/ColorCarouselRenderer'
+import ControlBar from '@/components/ControlBar'
+
+const MODE_LABELS = {
+  tracking: '视觉追踪训练',
+  carousel: '颜色轮播',
+  calm: '舒缓模式',
+  excite: '兴奋模式',
+}
+
+/**
+ * 多感官刺激训练页
+ * 全屏 Canvas 动画 + 底部控制栏
+ * 支持投屏模式：URL带cast=true时隐藏控制栏，接收手机端状态同步
+ * 点击画面区域可隐藏/显示控制栏（投屏时全屏显示训练内容）
+ */
+export default function SensoryTraining() {
+  const mode = useTrainingStore((s) => s.mode)
+  const setMode = useTrainingStore((s) => s.setMode)
+  const setSpeed = useTrainingStore((s) => s.setSpeed)
+  const setBrightness = useTrainingStore((s) => s.setBrightness)
+  const togglePause = useTrainingStore((s) => s.togglePause)
+  const [showControls, setShowControls] = useState(true)
+
+  const isCastMode = typeof window !== 'undefined' &&
+    new URLSearchParams(window.location.search).get('cast') === 'true'
+
+  useEffect(() => {
+    document.body.style.margin = '0'
+    document.body.style.padding = '0'
+    document.body.style.overflow = 'hidden'
+  }, [])
+
+  useEffect(() => {
+    if (!isCastMode) return
+    ;(window as any).__castUpdate = (
+      newMode: string,
+      newSpeed: number,
+      newBrightness: number,
+      newIsPaused: boolean,
+      _page: string
+    ) => {
+      setMode(newMode as any)
+      setSpeed(newSpeed)
+      setBrightness(newBrightness)
+      const currentPaused = useTrainingStore.getState().isPaused
+      if (newIsPaused !== currentPaused) {
+        togglePause()
+      }
+    }
+  }, [isCastMode, setMode, setSpeed, setBrightness, togglePause])
+
+  const render = useCallback(
+    (ctx: CanvasRenderingContext2D, timestamp: number) => {
+      const canvas = ctx.canvas
+      const dpr = window.devicePixelRatio || 1
+      const width = canvas.width / dpr
+      const height = canvas.height / dpr
+
+      switch (mode) {
+        case 'tracking':
+          renderTracking(ctx, timestamp, width, height)
+          break
+        case 'carousel':
+          renderColorCarousel(ctx, timestamp, width, height)
+          break
+        case 'calm':
+          renderCalm(ctx, timestamp, width, height)
+          break
+        case 'excite':
+          renderExcite(ctx, timestamp, width, height)
+          break
+      }
+    },
+    [mode]
+  )
+
+  const canvasRef = useCanvas(render)
+
+  const handleCanvasClick = () => {
+    if (!isCastMode) {
+      setShowControls((prev) => !prev)
+    }
+  }
+
+  return (
+    <div className="h-screen w-screen bg-dark relative m-0 p-0 overflow-hidden">
+      <canvas
+        ref={canvasRef}
+        className="absolute inset-0 w-full h-full cursor-pointer"
+        onClick={handleCanvasClick}
+      />
+
+      {!isCastMode && showControls && (
+        <div className="absolute top-6 left-6 z-20">
+          <div className="bg-black/40 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10">
+            <span className="text-white/70 text-sm font-medium">
+              {MODE_LABELS[mode]}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {!isCastMode && showControls && <ControlBar />}
+    </div>
+  )
+}
