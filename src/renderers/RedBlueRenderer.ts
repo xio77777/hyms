@@ -8,6 +8,7 @@ const BASE_CYCLE_MS = 3000
  * 红蓝光交替刺激渲染器
  * 红光激活视觉通路，蓝光舒缓神经
  * 专业文献推荐的视神经激活方法
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderRedBlue(
   ctx: CanvasRenderingContext2D,
@@ -15,7 +16,7 @@ export function renderRedBlue(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   const cycleMs = BASE_CYCLE_MS / speed
   const t = (timestamp % cycleMs) / cycleMs
@@ -32,8 +33,8 @@ export function renderRedBlue(
     width / 2, height / 2, 0,
     width / 2, height / 2, Math.max(width, height) * 0.7
   )
-  const centerAlpha = 0.35 * brightness
-  const edgeAlpha = 0.15 * brightness
+  const centerAlpha = 0.35
+  const edgeAlpha = 0.15
   bgGradient.addColorStop(0, `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${centerAlpha})`)
   bgGradient.addColorStop(1, `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${edgeAlpha})`)
 
@@ -47,7 +48,7 @@ export function renderRedBlue(
   for (let i = 0; i < ringCount; i++) {
     const ringProgress = (i + 1) / ringCount
     const ringRadius = Math.max(width, height) * 0.15 * ringProgress * pulseScale
-    const ringAlpha = (1 - ringProgress * 0.7) * 0.3 * brightness
+    const ringAlpha = (1 - ringProgress * 0.7) * 0.3
 
     ctx.beginPath()
     ctx.arc(width / 2, height / 2, ringRadius, 0, Math.PI * 2)
@@ -61,8 +62,8 @@ export function renderRedBlue(
     width / 2, height / 2, 0,
     width / 2, height / 2, coreRadius
   )
-  coreGradient.addColorStop(0, `rgba(255, 255, 255, ${0.6 * brightness})`)
-  coreGradient.addColorStop(0.3, `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${0.5 * brightness})`)
+  coreGradient.addColorStop(0, `rgba(255, 255, 255, ${0.6})`)
+  coreGradient.addColorStop(0.3, `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${0.5})`)
   coreGradient.addColorStop(1, `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, 0)`)
 
   ctx.beginPath()
@@ -73,8 +74,8 @@ export function renderRedBlue(
   const isRedPhase = smoothT > 0.5
   const label = isRedPhase ? '红光刺激 · 激活视觉通路' : '蓝光舒缓 · 放松视神经'
   const labelColor = isRedPhase
-    ? `rgba(255, 100, 100, ${0.7 * brightness})`
-    : `rgba(100, 150, 255, ${0.7 * brightness})`
+    ? `rgba(255, 100, 100, ${0.7})`
+    : `rgba(100, 150, 255, ${0.7})`
 
   ctx.font = '600 22px "Noto Sans SC", sans-serif'
   ctx.textAlign = 'center'
@@ -82,7 +83,7 @@ export function renderRedBlue(
   ctx.fillText(label, width / 2, height / 2 + coreRadius + 50)
 
   ctx.font = '400 16px "Noto Sans SC", sans-serif'
-  ctx.fillStyle = `rgba(255, 255, 255, ${0.35 * brightness})`
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.35})`
   ctx.fillText('请注视中心光点', width / 2, height / 2 - coreRadius - 30)
 
   const barWidth = width * 0.4
@@ -93,8 +94,8 @@ export function renderRedBlue(
 
   const redWidth = barWidth * smoothT
   const barGradient = ctx.createLinearGradient(barX, 0, barX + barWidth, 0)
-  barGradient.addColorStop(0, `rgba(40, 100, 255, ${0.6 * brightness})`)
-  barGradient.addColorStop(1, `rgba(255, 40, 40, ${0.6 * brightness})`)
+  barGradient.addColorStop(0, `rgba(40, 100, 255, ${0.6})`)
+  barGradient.addColorStop(1, `rgba(255, 40, 40, ${0.6})`)
   ctx.fillStyle = barGradient
   ctx.fillRect(barX, barY, redWidth, 6)
 }

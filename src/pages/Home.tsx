@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { Eye, CircleDot, Waves, Focus, Brain } from 'lucide-react'
+import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3 } from 'lucide-react'
 import CastButton from '@/components/CastButton'
+import { useTrainingStore } from '@/store/trainingStore'
 
 interface TrainingCardProps {
   title: string
@@ -91,6 +92,21 @@ const TRAINING_MODULES = [
     icon: <Brain className="w-8 h-8" />,
     gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-calm-lavender/10',
     path: '/cognitive',
+  },
+  {
+    title: '画中画模式',
+    description: '投屏到电视后，手机端继续显示控制界面，训练更便捷',
+    icon: <Tv className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-gold/10 via-transparent to-neon-cyan/10',
+    path: '/pip',
+  },
+  {
+    title: '训练统计',
+    description: '查看训练时长、次数和历史记录，了解康复进展',
+    icon: <BarChart3 className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-neon-gold/10',
+    path: '/stats',
+    disabled: true,
   },
 ]
 

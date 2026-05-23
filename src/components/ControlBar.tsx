@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { ArrowLeft, Pause, Play, Maximize, Eye, CloudRain, Zap, Palette } from 'lucide-react'
+import { ArrowLeft, Pause, Play, Maximize, Eye, CloudRain, Zap, Palette, Timer, Volume2, VolumeX, Clock, RotateCcw } from 'lucide-react'
 import { useTrainingStore, type TrainingMode } from '@/store/trainingStore'
 import { useNavigate } from 'react-router-dom'
 import CastButton from '@/components/CastButton'
@@ -19,13 +19,25 @@ const MODES: ModeOption[] = [
   { key: 'excite', label: '兴奋', icon: <Zap className="w-4 h-4" />, color: 'text-neon-gold' },
 ]
 
-/**
- * 底部控制栏组件
- * 移动端适配：小屏幕下按钮简化、滑块缩短
- */
+const TIMER_OPTIONS = [
+  { label: '3分钟', minutes: 3 },
+  { label: '5分钟', minutes: 5 },
+  { label: '10分钟', minutes: 10 },
+  { label: '15分钟', minutes: 15 },
+  { label: '20分钟', minutes: 20 },
+  { label: '30分钟', minutes: 30 },
+]
+
 export default function ControlBar() {
   const navigate = useNavigate()
-  const { mode, speed, brightness, isPaused, setMode, setSpeed, setBrightness, togglePause } = useTrainingStore()
+  const {
+    mode, speed, brightness, isPaused,
+    timerSeconds, timerActive, timerCompleted,
+    settings,
+    setMode, setSpeed, setBrightness, togglePause,
+    setTimerSeconds, setTimerActive, setTimerCompleted, resetTimer,
+    updateSettings, speak
+  } = useTrainingStore()
   const { isConnected, sendUpdate } = useCast()
 
   useEffect(() => {
@@ -33,6 +45,29 @@ export default function ControlBar() {
       sendUpdate({ mode, speed, brightness, isPaused })
     }
   }, [mode, speed, brightness, isPaused, isConnected, sendUpdate])
+
+  useEffect(() => {
+    if (!timerActive || timerCompleted) return
+
+    const interval = setInterval(() => {
+      setTimerSeconds(timerSeconds + 1)
+      
+      if (timerSeconds > 0 && timerSeconds % 60 === 0) {
+        const remainingMinutes = Math.ceil((settings.timerMinutes * 60 - timerSeconds) / 60)
+        if (remainingMinutes > 0) {
+          speak(`${remainingMinutes}分钟`)
+        }
+      }
+      
+      if (timerSeconds >= settings.timerMinutes * 60) {
+        setTimerActive(false)
+        setTimerCompleted(true)
+        speak('训练完成')
+      }
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [timerActive, timerCompleted, timerSeconds, settings.timerMinutes, setTimerSeconds, setTimerActive, setTimerCompleted, speak])
 
   const handleFullscreen = () => {
     const elem = document.documentElement
@@ -43,12 +78,87 @@ export default function ControlBar() {
     }
   }
 
+  const toggleVoice = () => {
+    updateSettings({ voiceEnabled: !settings.voiceEnabled })
+    if (!settings.voiceEnabled) {
+      speak('语音播报已开启')
+    }
+  }
+
+  const startTimer = (minutes: number) => {
+    updateSettings({ timerMinutes: minutes, timerEnabled: true })
+    setTimerSeconds(0)
+    setTimerActive(true)
+    setTimerCompleted(false)
+    speak(`${minutes}分钟训练开始`)
+  }
+
+  const stopTimer = () => {
+    setTimerActive(false)
+    setTimerCompleted(false)
+    resetTimer()
+    speak('计时器已停止')
+  }
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const getElapsedPercent = () => {
+    if (!settings.timerEnabled) return 0
+    return Math.min((timerSeconds / (settings.timerMinutes * 60)) * 100, 100)
+  }
+
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20">
+      {timerActive && (
+        <div className="bg-black/40 backdrop-blur-sm border-b border-white/10 px-2 py-1">
+          <div className="flex items-center gap-3 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2">
+              <Timer className="w-3.5 h-3.5 text-neon-cyan" />
+              <span className="text-white/70 text-xs font-mono">
+                {formatTime(timerSeconds)} / {formatTime(settings.timerMinutes * 60)}
+              </span>
+            </div>
+            <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-neon-cyan to-neon-magenta transition-all duration-1000"
+                style={{ width: `${getElapsedPercent()}%` }}
+              />
+            </div>
+            <button
+              onClick={stopTimer}
+              className="p-1 text-white/50 hover:text-white transition-colors"
+              title="停止计时"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {timerCompleted && (
+        <div className="bg-neon-cyan/10 backdrop-blur-sm border-b border-neon-cyan/20 px-2 py-2">
+          <div className="flex items-center justify-center gap-4 max-w-5xl mx-auto">
+            <div className="flex items-center gap-2 text-neon-cyan text-sm font-medium">
+              <Clock className="w-4 h-4" />
+              <span>🎉 训练完成！用时 {formatTime(timerSeconds)}</span>
+            </div>
+            <button
+              onClick={stopTimer}
+              className="px-3 py-1 bg-neon-cyan/20 hover:bg-neon-cyan/30 rounded-lg text-neon-cyan text-xs transition-colors"
+            >
+              确定
+            </button>
+          </div>
+        </div>
+      )}
+
       <div className="bg-black/70 backdrop-blur-xl border-t border-white/10 px-2 py-2 sm:px-6 sm:py-4">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-4 max-w-5xl mx-auto">
           
-          {/* 顶部行：返回 + 模式切换 */}
           <div className="flex items-center justify-between w-full sm:w-auto gap-2">
             <button
               onClick={() => navigate('/')}
@@ -78,8 +188,7 @@ export default function ControlBar() {
             </div>
           </div>
 
-          {/* 底部行：控制项 */}
-          <div className="flex items-center gap-2 sm:gap-6 w-full sm:w-auto justify-center">
+          <div className="flex items-center gap-2 sm:gap-6 w-full sm:w-auto justify-center flex-wrap">
             <div className="flex items-center gap-1 sm:gap-2">
               <span className="text-white/40 text-[10px] sm:text-xs w-5 sm:w-8">速度</span>
               <input
@@ -118,6 +227,7 @@ export default function ControlBar() {
               <button
                 onClick={togglePause}
                 className="text-white/60 hover:text-white transition-colors p-1 sm:p-2 rounded-lg hover:bg-white/10"
+                title={isPaused ? '继续' : '暂停'}
               >
                 {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
               </button>
@@ -125,9 +235,59 @@ export default function ControlBar() {
               <button
                 onClick={handleFullscreen}
                 className="text-white/60 hover:text-white transition-colors p-1 sm:p-2 rounded-lg hover:bg-white/10"
+                title="全屏"
               >
                 <Maximize className="w-4 h-4" />
               </button>
+
+              <button
+                onClick={toggleVoice}
+                className={`transition-colors p-1 sm:p-2 rounded-lg ${
+                  settings.voiceEnabled
+                    ? 'text-neon-cyan hover:bg-neon-cyan/10'
+                    : 'text-white/40 hover:text-white/60 hover:bg-white/10'
+                }`}
+                title={settings.voiceEnabled ? '关闭语音' : '开启语音'}
+              >
+                {settings.voiceEnabled ? (
+                  <Volume2 className="w-4 h-4" />
+                ) : (
+                  <VolumeX className="w-4 h-4" />
+                )}
+              </button>
+
+              <div className="relative group">
+                <button
+                  className={`text-white/60 hover:text-white transition-colors p-1 sm:p-2 rounded-lg hover:bg-white/10 ${
+                    timerActive ? 'text-neon-cyan bg-neon-cyan/10' : ''
+                  }`}
+                  title="训练计时器"
+                >
+                  <Clock className="w-4 h-4" />
+                </button>
+                
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block">
+                  <div className="bg-gray-900 border border-white/10 rounded-xl p-3 shadow-xl min-w-[200px]">
+                    <div className="text-white/60 text-xs mb-2">训练计时</div>
+                    <div className="grid grid-cols-3 gap-2">
+                      {TIMER_OPTIONS.map((opt) => (
+                        <button
+                          key={opt.minutes}
+                          onClick={() => startTimer(opt.minutes)}
+                          disabled={timerActive}
+                          className={`px-2 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                            timerActive
+                              ? 'bg-white/5 text-white/30 cursor-not-allowed'
+                              : 'bg-white/10 text-white/70 hover:bg-white/20 hover:text-white'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               <CastButton />
             </div>

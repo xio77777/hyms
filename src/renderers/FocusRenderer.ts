@@ -8,6 +8,7 @@ const RINGS = [60, 120, 200, 300]
  * 视觉聚焦训练渲染器
  * 中心目标在远近之间缩放变化，引导患者视线切换聚焦
  * 改善视力模糊和聚焦能力
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderFocus(
   ctx: CanvasRenderingContext2D,
@@ -15,7 +16,7 @@ export function renderFocus(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   const cycleMs = FOCUS_CYCLE_MS / speed
   const t = (timestamp % cycleMs) / cycleMs
@@ -34,7 +35,7 @@ export function renderFocus(
   for (let i = RINGS.length - 1; i >= 0; i--) {
     const baseRadius = RINGS[i]
     const radius = baseRadius * currentScale
-    const alpha = (0.08 + (1 - i / RINGS.length) * 0.12) * brightness
+    const alpha = (0.08 + (1 - i / RINGS.length) * 0.12)
 
     ctx.beginPath()
     ctx.arc(cx, cy, radius, 0, Math.PI * 2)
@@ -44,7 +45,7 @@ export function renderFocus(
   }
 
   const crossSize = 20 * currentScale
-  const crossAlpha = 0.3 * brightness
+  const crossAlpha = 0.3
   ctx.strokeStyle = `rgba(0, 229, 255, ${crossAlpha})`
   ctx.lineWidth = 1
   ctx.beginPath()
@@ -59,8 +60,8 @@ export function renderFocus(
     cx, cy, 0,
     cx, cy, targetRadius * 3
   )
-  outerGlow.addColorStop(0, `rgba(0, 229, 255, ${0.25 * brightness})`)
-  outerGlow.addColorStop(0.5, `rgba(0, 229, 255, ${0.06 * brightness})`)
+  outerGlow.addColorStop(0, `rgba(0, 229, 255, ${0.25})`)
+  outerGlow.addColorStop(0.5, `rgba(0, 229, 255, ${0.06})`)
   outerGlow.addColorStop(1, `rgba(0, 229, 255, 0)`)
 
   ctx.beginPath()
@@ -72,8 +73,8 @@ export function renderFocus(
     cx, cy, 0,
     cx, cy, targetRadius
   )
-  coreGradient.addColorStop(0, `rgba(255, 255, 255, ${0.9 * brightness})`)
-  coreGradient.addColorStop(0.5, `rgba(0, 229, 255, ${0.7 * brightness})`)
+  coreGradient.addColorStop(0, `rgba(255, 255, 255, ${0.9})`)
+  coreGradient.addColorStop(0.5, `rgba(0, 229, 255, ${0.7})`)
   coreGradient.addColorStop(1, `rgba(0, 229, 255, 0)`)
 
   ctx.beginPath()
@@ -84,7 +85,7 @@ export function renderFocus(
   const dotRadius = 4 * currentScale
   ctx.beginPath()
   ctx.arc(cx, cy, dotRadius, 0, Math.PI * 2)
-  ctx.fillStyle = `rgba(255, 255, 255, ${0.95 * brightness})`
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.95})`
   ctx.fill()
 
   const isNear = focusPhase > 0.5
@@ -93,11 +94,11 @@ export function renderFocus(
 
   ctx.font = '600 22px "Noto Sans SC", sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillStyle = `rgba(0, 229, 255, ${0.7 * brightness})`
+  ctx.fillStyle = `rgba(0, 229, 255, ${0.7})`
   ctx.fillText(label, cx, cy - targetRadius * 3 - 20)
 
   ctx.font = '400 16px "Noto Sans SC", sans-serif'
-  ctx.fillStyle = `rgba(255, 255, 255, ${0.35 * brightness})`
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.35})`
   ctx.fillText(subLabel, cx, cy - targetRadius * 3 + 8)
 
   const particleCount = 12
@@ -106,7 +107,7 @@ export function renderFocus(
     const dist = (150 + Math.sin(timestamp * 0.001 * speed + i * 0.5) * 50) * currentScale
     const px = cx + Math.cos(angle) * dist
     const py = cy + Math.sin(angle) * dist
-    const pAlpha = (0.15 + Math.sin(timestamp * 0.002 + i) * 0.1) * brightness
+    const pAlpha = (0.15 + Math.sin(timestamp * 0.002 + i) * 0.1)
 
     ctx.beginPath()
     ctx.arc(px, py, 2, 0, Math.PI * 2)
@@ -119,10 +120,10 @@ export function renderFocus(
   const barY = height - 50
   ctx.fillStyle = `rgba(255, 255, 255, 0.08)`
   ctx.fillRect(barX, barY, barWidth, 4)
-  ctx.fillStyle = `rgba(0, 229, 255, ${0.5 * brightness})`
+  ctx.fillStyle = `rgba(0, 229, 255, ${0.5})`
   ctx.fillRect(barX, barY, barWidth * focusPhase, 4)
 
   ctx.font = '400 14px "Noto Sans SC", sans-serif'
-  ctx.fillStyle = `rgba(255, 255, 255, ${0.3 * brightness})`
+  ctx.fillStyle = `rgba(255, 255, 255, ${0.3})`
   ctx.fillText(`聚焦深度: ${Math.round(focusPhase * 100)}%`, cx, barY + 22)
 }

@@ -36,6 +36,7 @@ function createOrbs(width: number, height: number): LightOrb[] {
 /**
  * 视觉追踪渲染器
  * 绘制移动的彩色光球，带发光拖尾效果，吸引目光追随
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderTracking(
   ctx: CanvasRenderingContext2D,
@@ -43,7 +44,7 @@ export function renderTracking(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   if (!(ctx as unknown as Record<string, LightOrb[]>).__orbs) {
     ;(ctx as unknown as Record<string, LightOrb[]>).__orbs = createOrbs(width, height)
@@ -69,7 +70,7 @@ export function renderTracking(
 
     for (let i = orb.trail.length - 1; i >= 0; i--) {
       const point = orb.trail[i]
-      const alpha = (1 - i / TRAIL_LENGTH) * 0.6 * brightness
+      const alpha = (1 - i / TRAIL_LENGTH) * 0.6
       const trailRadius = orb.radius * (1 - i / TRAIL_LENGTH) * 0.8
 
       const gradient = ctx.createRadialGradient(
@@ -89,8 +90,8 @@ export function renderTracking(
       orb.x, orb.y, 0,
       orb.x, orb.y, orb.radius * 3
     )
-    glowGradient.addColorStop(0, orb.color + Math.round(brightness * 180).toString(16).padStart(2, '0'))
-    glowGradient.addColorStop(0.3, orb.color + Math.round(brightness * 60).toString(16).padStart(2, '0'))
+    glowGradient.addColorStop(0, orb.color + Math.round(180).toString(16).padStart(2, '0'))
+    glowGradient.addColorStop(0.3, orb.color + Math.round(60).toString(16).padStart(2, '0'))
     glowGradient.addColorStop(1, orb.color + '00')
 
     ctx.beginPath()
@@ -102,8 +103,8 @@ export function renderTracking(
       orb.x, orb.y, 0,
       orb.x, orb.y, orb.radius
     )
-    coreGradient.addColorStop(0, '#ffffff' + Math.round(brightness * 255).toString(16).padStart(2, '0'))
-    coreGradient.addColorStop(0.4, orb.color + Math.round(brightness * 255).toString(16).padStart(2, '0'))
+    coreGradient.addColorStop(0, '#ffffff' + Math.round(255).toString(16).padStart(2, '0'))
+    coreGradient.addColorStop(0.4, orb.color + Math.round(255).toString(16).padStart(2, '0'))
     coreGradient.addColorStop(1, orb.color + '00')
 
     ctx.beginPath()

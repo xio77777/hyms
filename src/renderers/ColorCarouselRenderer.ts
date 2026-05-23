@@ -16,6 +16,7 @@ const SCROLL_DURATION_MS = 8000
 /**
  * 颜色轮播渲染器
  * 8种颜色并排显示，整体向右平滑滚动轮询
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderColorCarousel(
   ctx: CanvasRenderingContext2D,
@@ -23,14 +24,12 @@ export function renderColorCarousel(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   const colorWidth = width / PALETTE.length
 
   const cycleMs = SCROLL_DURATION_MS / speed
   const offset = ((timestamp % cycleMs) / cycleMs) * width
-
-  ctx.globalAlpha = brightness
 
   for (let repeat = -1; repeat < 2; repeat++) {
     for (let i = 0; i < PALETTE.length; i++) {
@@ -39,6 +38,4 @@ export function renderColorCarousel(
       ctx.fillRect(x, 0, colorWidth, height)
     }
   }
-
-  ctx.globalAlpha = 1
 }
