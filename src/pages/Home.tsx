@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3 } from 'lucide-react'
+import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks } from 'lucide-react'
 import CastButton from '@/components/CastButton'
 import { useTrainingStore } from '@/store/trainingStore'
 
@@ -106,7 +106,13 @@ const TRAINING_MODULES = [
     icon: <BarChart3 className="w-8 h-8" />,
     gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-neon-gold/10',
     path: '/stats',
-    disabled: true,
+  },
+  {
+    title: '训练计划',
+    description: '预设训练组合，一键开始系统化训练，支持自定义创建',
+    icon: <ListChecks className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-cyan/10 via-transparent to-neon-gold/10',
+    path: '/plan',
   },
 ]
 
