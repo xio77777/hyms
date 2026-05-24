@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History } from 'lucide-react'
+import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History, Bell } from 'lucide-react'
 import CastButton from '@/components/CastButton'
 import { useTrainingStore } from '@/store/trainingStore'
 
@@ -120,6 +120,13 @@ const TRAINING_MODULES = [
     icon: <History className="w-8 h-8" />,
     gradient: 'bg-gradient-to-br from-calm-lavender/10 via-transparent to-calm-sky/10',
     path: '/history',
+  },
+  {
+    title: '训练提醒',
+    description: '定时提醒，帮助养成规律训练的好习惯',
+    icon: <Bell className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10',
+    path: '/reminders',
   },
 ]
 

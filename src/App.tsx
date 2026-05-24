@@ -9,6 +9,7 @@ import PictureInPicture from "@/pages/PictureInPicture";
 import TrainingStats from "@/pages/TrainingStats";
 import TrainingPlan from "@/pages/TrainingPlan";
 import TrainingHistory from "@/pages/TrainingHistory";
+import ReminderSettings from "@/pages/ReminderSettings";
 
 /**
  * 应用根组件
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="/stats" element={<TrainingStats />} />
         <Route path="/plan" element={<TrainingPlan />} />
         <Route path="/history" element={<TrainingHistory />} />
+        <Route path="/reminders" element={<ReminderSettings />} />
       </Routes>
     </Router>
   );

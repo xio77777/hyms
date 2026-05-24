@@ -2,6 +2,7 @@ import { ArrowLeft, Clock, Activity, Calendar } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTrainingStore } from '@/store/trainingStore'
 import { ShareButton } from '@/components/ShareButton'
+import { ThemeSwitcher } from '@/components/ThemeSwitcher'
 
 export default function TrainingStats() {
   const navigate = useNavigate()
@@ -50,6 +51,7 @@ export default function TrainingStats() {
         <h1 className="text-white/80 text-lg font-semibold">训练统计</h1>
 
         <div className="flex items-center gap-2">
+          <ThemeSwitcher />
           <ShareButton />
           <button
             onClick={() => navigate('/history')}
