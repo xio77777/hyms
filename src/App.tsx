@@ -8,6 +8,7 @@ import CognitiveTraining from "@/pages/CognitiveTraining";
 import PictureInPicture from "@/pages/PictureInPicture";
 import TrainingStats from "@/pages/TrainingStats";
 import TrainingPlan from "@/pages/TrainingPlan";
+import TrainingHistory from "@/pages/TrainingHistory";
 
 /**
  * 应用根组件
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="/pip" element={<PictureInPicture />} />
         <Route path="/stats" element={<TrainingStats />} />
         <Route path="/plan" element={<TrainingPlan />} />
+        <Route path="/history" element={<TrainingHistory />} />
       </Routes>
     </Router>
   );

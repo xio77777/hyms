@@ -1,6 +1,7 @@
 import { ArrowLeft, Clock, Activity, Calendar } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTrainingStore } from '@/store/trainingStore'
+import { ShareButton } from '@/components/ShareButton'
 
 export default function TrainingStats() {
   const navigate = useNavigate()
@@ -48,7 +49,15 @@ export default function TrainingStats() {
 
         <h1 className="text-white/80 text-lg font-semibold">训练统计</h1>
 
-        <div className="w-20" />
+        <div className="flex items-center gap-2">
+          <ShareButton />
+          <button
+            onClick={() => navigate('/history')}
+            className="text-xs px-3 py-1.5 bg-white/10 hover:bg-white/20 text-white/70 rounded-lg transition-colors"
+          >
+            查看历史
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
