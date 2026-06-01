@@ -91,6 +91,7 @@ function drawShape(ctx: CanvasRenderingContext2D, shape: Shape) {
 /**
  * 兴奋模式渲染器
  * 高饱和度色块快速变换，脉冲式闪烁，几何图形旋转和缩放
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderExcite(
   ctx: CanvasRenderingContext2D,
@@ -98,7 +99,7 @@ export function renderExcite(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   if (!(ctx as unknown as Record<string, Shape[]>).__shapes) {
     ;(ctx as unknown as Record<string, Shape[]>).__shapes = createShapes(width, height)
@@ -115,7 +116,7 @@ export function renderExcite(
 
   const colorFlashIndex = Math.floor(t * 2) % EXCITE_COLORS.length
   const flashColor = EXCITE_COLORS[colorFlashIndex]
-  const flashAlpha = pulseCycle * 0.05 * brightness
+  const flashAlpha = pulseCycle * 0.05
 
   const flashGrad = ctx.createRadialGradient(
     width / 2, height / 2, 0,
@@ -129,7 +130,7 @@ export function renderExcite(
   for (const shape of shapes) {
     shape.rotation += shape.rotationSpeed * 0.02 * speed
     shape.scale = 0.8 + Math.sin(t * shape.scaleSpeed) * 0.3
-    shape.alpha = (0.4 + pulseCycle * 0.4) * brightness
+    shape.alpha = (0.4 + pulseCycle * 0.4)
 
     const moveX = Math.sin(t * 0.5 + shape.rotation) * 30 * speed
     const moveY = Math.cos(t * 0.3 + shape.rotation) * 30 * speed
@@ -159,7 +160,7 @@ export function renderExcite(
       cx + Math.cos(angle) * lineLen,
       cy + Math.sin(angle) * lineLen
     )
-    ctx.strokeStyle = EXCITE_COLORS[i % EXCITE_COLORS.length] + Math.round(pulseCycle * brightness * 40).toString(16).padStart(2, '0')
+    ctx.strokeStyle = EXCITE_COLORS[i % EXCITE_COLORS.length] + Math.round(pulseCycle * 40).toString(16).padStart(2, '0')
     ctx.lineWidth = 1
     ctx.stroke()
   }

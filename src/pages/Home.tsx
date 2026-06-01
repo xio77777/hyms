@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom'
-import { Eye, CircleDot, Waves, Focus, Brain } from 'lucide-react'
+import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History, Bell } from 'lucide-react'
 import CastButton from '@/components/CastButton'
+import { useTrainingStore } from '@/store/trainingStore'
 
 interface TrainingCardProps {
   title: string
@@ -91,6 +92,41 @@ const TRAINING_MODULES = [
     icon: <Brain className="w-8 h-8" />,
     gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-calm-lavender/10',
     path: '/cognitive',
+  },
+  {
+    title: '画中画模式',
+    description: '投屏到电视后，手机端继续显示控制界面，训练更便捷',
+    icon: <Tv className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-gold/10 via-transparent to-neon-cyan/10',
+    path: '/pip',
+  },
+  {
+    title: '训练统计',
+    description: '查看训练时长、次数和历史记录，了解康复进展',
+    icon: <BarChart3 className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-neon-gold/10',
+    path: '/stats',
+  },
+  {
+    title: '训练计划',
+    description: '预设训练组合，一键开始系统化训练，支持自定义创建',
+    icon: <ListChecks className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-neon-cyan/10 via-transparent to-neon-gold/10',
+    path: '/plan',
+  },
+  {
+    title: '训练历史',
+    description: '查看每日训练记录、模式分布和长期趋势分析',
+    icon: <History className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-calm-lavender/10 via-transparent to-calm-sky/10',
+    path: '/history',
+  },
+  {
+    title: '训练提醒',
+    description: '定时提醒，帮助养成规律训练的好习惯',
+    icon: <Bell className="w-8 h-8" />,
+    gradient: 'bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10',
+    path: '/reminders',
   },
 ]
 

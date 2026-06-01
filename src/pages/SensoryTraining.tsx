@@ -6,6 +6,8 @@ import { renderCalm } from '@/renderers/CalmRenderer'
 import { renderExcite } from '@/renderers/ExciteRenderer'
 import { renderColorCarousel } from '@/renderers/ColorCarouselRenderer'
 import ControlBar from '@/components/ControlBar'
+import { ArrowLeft, Pause, Play } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 const MODE_LABELS = {
   tracking: '视觉追踪训练',
@@ -21,11 +23,13 @@ const MODE_LABELS = {
  * 点击画面区域可隐藏/显示控制栏（投屏时全屏显示训练内容）
  */
 export default function SensoryTraining() {
+  const navigate = useNavigate()
   const mode = useTrainingStore((s) => s.mode)
   const setMode = useTrainingStore((s) => s.setMode)
   const setSpeed = useTrainingStore((s) => s.setSpeed)
   const setBrightness = useTrainingStore((s) => s.setBrightness)
   const togglePause = useTrainingStore((s) => s.togglePause)
+  const isPaused = useTrainingStore((s) => s.isPaused)
   const [showControls, setShowControls] = useState(true)
 
   const isCastMode = typeof window !== 'undefined' &&
@@ -104,6 +108,18 @@ export default function SensoryTraining() {
               {MODE_LABELS[mode]}
             </span>
           </div>
+        </div>
+      )}
+
+      {!isCastMode && showControls && (
+        <div className="absolute top-6 right-6 z-20">
+          <button
+            onClick={() => navigate('/')}
+            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-3 py-2 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10 hover:bg-black/50"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span className="text-sm">返回</span>
+          </button>
         </div>
       )}
 

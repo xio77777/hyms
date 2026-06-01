@@ -19,6 +19,7 @@ interface Ripple {
 /**
  * 舒缓模式渲染器
  * 全屏渐变色缓慢过渡，呼吸般的明暗脉动，柔和水波纹效果
+ * 优化：移除重复的亮度计算，使用 CSS filter 统一处理
  */
 export function renderCalm(
   ctx: CanvasRenderingContext2D,
@@ -26,7 +27,7 @@ export function renderCalm(
   width: number,
   height: number
 ) {
-  const { speed, brightness } = useTrainingStore.getState()
+  const { speed } = useTrainingStore.getState()
 
   const t = timestamp * 0.001 * speed
 
@@ -43,7 +44,7 @@ export function renderCalm(
     b: CALM_COLORS[ci].b + (CALM_COLORS[nextCi].b - CALM_COLORS[ci].b) * cf,
   }
 
-  const bgAlpha = (0.15 + breathCycle * 0.15) * brightness
+  const bgAlpha = (0.15 + breathCycle * 0.15)
   ctx.fillStyle = `rgba(${Math.round(currentColor.r)}, ${Math.round(currentColor.g)}, ${Math.round(currentColor.b)}, ${bgAlpha})`
   ctx.fillRect(0, 0, width, height)
 
@@ -62,7 +63,7 @@ export function renderCalm(
       y: centerY + (Math.random() - 0.5) * height * 0.6,
       radius: 0,
       maxRadius: 100 + Math.random() * 200,
-      alpha: 0.3 * brightness,
+      alpha: 0.3,
       color: CALM_COLORS[Math.floor(Math.random() * CALM_COLORS.length)],
     })
   }
@@ -89,7 +90,7 @@ export function renderCalm(
     centerX, centerY, 0,
     centerX, centerY, glowRadius
   )
-  const glowAlpha = (0.08 + breathCycle * 0.08) * brightness
+  const glowAlpha = (0.08 + breathCycle * 0.08)
   centerGlow.addColorStop(0, `rgba(${Math.round(currentColor.r)}, ${Math.round(currentColor.g)}, ${Math.round(currentColor.b)}, ${glowAlpha})`)
   centerGlow.addColorStop(1, `rgba(${Math.round(currentColor.r)}, ${Math.round(currentColor.g)}, ${Math.round(currentColor.b)}, 0)`)
 
@@ -104,7 +105,7 @@ export function renderCalm(
     const dist = maxDim * 0.15 + Math.sin(t * 0.3 + i) * maxDim * 0.1
     const px = centerX + Math.cos(angle) * dist
     const py = centerY + Math.sin(angle) * dist
-    const pAlpha = (0.2 + Math.sin(t + i) * 0.15) * brightness
+    const pAlpha = (0.2 + Math.sin(t + i) * 0.15)
 
     const pColor = CALM_COLORS[i % CALM_COLORS.length]
     ctx.beginPath()
