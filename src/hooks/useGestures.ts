@@ -97,11 +97,16 @@ export function useKeyboardShortcuts(options: {
   onSpace?: () => void
   onArrowLeft?: () => void
   onArrowRight?: () => void
+  onArrowUp?: () => void
+  onArrowDown?: () => void
   onKeyF?: () => void
   onEscape?: () => void
+  onKeyM?: () => void
+  onKeyV?: () => void
+  onDigit?: (digit: number) => void
   enabled?: boolean
 } = {}) {
-  const { onSpace, onArrowLeft, onArrowRight, onKeyF, onEscape, enabled = true } = options
+  const { onSpace, onArrowLeft, onArrowRight, onArrowUp, onArrowDown, onKeyF, onEscape, onKeyM, onKeyV, onDigit, enabled = true } = options
 
   useEffect(() => {
     if (!enabled) return
@@ -133,6 +138,20 @@ export function useKeyboardShortcuts(options: {
             onArrowRight()
           }
           break
+        case 'ArrowUp':
+          e.preventDefault()
+          if (onArrowUp) {
+            AudioContext.playClick()
+            onArrowUp()
+          }
+          break
+        case 'ArrowDown':
+          e.preventDefault()
+          if (onArrowDown) {
+            AudioContext.playClick()
+            onArrowDown()
+          }
+          break
         case 'KeyF':
           e.preventDefault()
           if (onKeyF) {
@@ -140,10 +159,41 @@ export function useKeyboardShortcuts(options: {
             onKeyF()
           }
           break
+        case 'KeyM':
+          e.preventDefault()
+          if (onKeyM) {
+            AudioContext.playClick()
+            onKeyM()
+          }
+          break
+        case 'KeyV':
+          e.preventDefault()
+          if (onKeyV) {
+            AudioContext.playClick()
+            onKeyV()
+          }
+          break
         case 'Escape':
           e.preventDefault()
           if (onEscape) {
             onEscape()
+          }
+          break
+        case 'Digit1':
+        case 'Digit2':
+        case 'Digit3':
+        case 'Digit4':
+        case 'Digit5':
+        case 'Digit6':
+        case 'Digit7':
+        case 'Digit8':
+        case 'Digit9':
+        case 'Digit0':
+          e.preventDefault()
+          if (onDigit) {
+            const digit = parseInt(e.code.replace('Digit', ''))
+            AudioContext.playClick()
+            onDigit(digit)
           }
           break
       }
@@ -154,7 +204,7 @@ export function useKeyboardShortcuts(options: {
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [enabled, onSpace, onArrowLeft, onArrowRight, onKeyF, onEscape])
+  }, [enabled, onSpace, onArrowLeft, onArrowRight, onArrowUp, onArrowDown, onKeyF, onEscape, onKeyM, onKeyV, onDigit])
 }
 
 export function useSwipeToChangeMode() {

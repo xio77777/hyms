@@ -10,6 +10,9 @@ import TrainingStats from "@/pages/TrainingStats";
 import TrainingPlan from "@/pages/TrainingPlan";
 import TrainingHistory from "@/pages/TrainingHistory";
 import ReminderSettings from "@/pages/ReminderSettings";
+import Achievements from "@/pages/Achievements";
+import BreathingTraining from "@/pages/BreathingTraining";
+import VisionTest from "@/pages/VisionTest";
 
 /**
  * 应用根组件
@@ -30,6 +33,9 @@ export default function App() {
         <Route path="/plan" element={<TrainingPlan />} />
         <Route path="/history" element={<TrainingHistory />} />
         <Route path="/reminders" element={<ReminderSettings />} />
+        <Route path="/achievements" element={<Achievements />} />
+        <Route path="/breathing" element={<BreathingTraining />} />
+        <Route path="/vision-test" element={<VisionTest />} />
       </Routes>
     </Router>
   );

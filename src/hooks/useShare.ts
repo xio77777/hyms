@@ -1,30 +1,66 @@
 import { useTrainingHistory, formatDuration, formatFullTime } from './useTrainingHistory'
 import { useTrainingStore } from '@/store/trainingStore'
 
+export type ReportPeriod = 'all' | 'week' | 'month'
+
 export function useShare() {
   const {
     history,
     getTotalDuration,
     getStreak,
     getAverageDuration,
-    getModeDistribution
+    getModeDistribution,
+    getWeekSessions,
+    getMonthSessions,
   } = useTrainingHistory()
   const { stats } = useTrainingStore()
 
-  const generateTextReport = () => {
+  const getSessionsForPeriod = (period: ReportPeriod) => {
+    switch (period) {
+      case 'week':
+        return getWeekSessions()
+      case 'month':
+        return getMonthSessions()
+      default:
+        return history
+    }
+  }
+
+  const getPeriodLabel = (period: ReportPeriod) => {
+    switch (period) {
+      case 'week':
+        return '本周'
+      case 'month':
+        return '本月'
+      default:
+        return '累计'
+    }
+  }
+
+  const generateTextReport = (period: ReportPeriod = 'all') => {
+    const sessions = getSessionsForPeriod(period)
+    const periodLabel = getPeriodLabel(period)
     const streak = getStreak()
-    const totalDuration = getTotalDuration()
-    const averageDuration = getAverageDuration()
-    const modeDistribution = getModeDistribution()
+    const totalDuration = sessions.reduce((sum, s) => sum + s.duration, 0)
+    const averageDuration = sessions.length > 0 ? totalDuration / sessions.length : 0
+    
+    const modeDistribution: Record<string, { count: number; totalDuration: number }> = {}
+    sessions.forEach(s => {
+      if (!modeDistribution[s.mode]) {
+        modeDistribution[s.mode] = { count: 0, totalDuration: 0 }
+      }
+      modeDistribution[s.mode].count++
+      modeDistribution[s.mode].totalDuration += s.duration
+    })
 
     const lines = [
-      '🌟 康复视神经训练报告',
+      `🌟 HYMS 康复视神经训练${periodLabel}报告`,
       '═══════════════════════',
       '',
       '📊 训练数据概览',
-      `• 总训练时长: ${formatDuration(totalDuration)}`,
-      `• 训练次数: ${history.length}次`,
-      `• 平均时长: ${formatDuration(averageDuration)}`,
+      `• ${periodLabel}训练时长: ${formatDuration(totalDuration)}`,
+      `• ${periodLabel}训练次数: ${sessions.length}次`,
+      `• 平均单次时长: ${formatDuration(averageDuration)}`,
       `• 连续训练: ${streak}天`,
       '',
       '🎯 训练模式分布',
@@ -35,7 +71,13 @@ export function useShare() {
         carousel: '颜色轮播',
         tracking: '视觉追踪',
         calm: '舒缓放松',
-        excite: '兴奋刺激'
+        excite: '兴奋刺激',
+        'eye-movement': '眼球运动',
+        focus: '视觉聚焦',
+        'red-blue': '红蓝刺激',
+        cognitive: '认知训练',
+        breathing: '呼吸训练',
+        sensory: '多感官刺激',
       }
       const modeLabel = modeLabels[mode] || mode
       lines.push(`• ${modeLabel}: ${data.count}次 (${formatDuration(data.totalDuration)})`)
@@ -49,7 +91,9 @@ export function useShare() {
     return lines.join('\n')
   }
 
-  const generateImageReport = async () => {
+  const generateImageReport = async (period: ReportPeriod = 'all') => {
+    const sessions = getSessionsForPeriod(period)
+    const periodLabel = getPeriodLabel(period)
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
     if (!ctx) return null
@@ -66,7 +110,7 @@ export function useShare() {
     ctx.fillStyle = '#00e5ff'
     ctx.font = 'bold 32px Arial'
     ctx.textAlign = 'center'
-    ctx.fillText('🌟 康复视神经训练报告', canvas.width / 2, 60)
+    ctx.fillText(`🌟 HYMS 康复视神经训练${periodLabel}报告`, canvas.width / 2, 60)
 
     ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)'
     ctx.lineWidth = 2
@@ -76,13 +120,21 @@ export function useShare() {
     ctx.stroke()
 
     const streak = getStreak()
-    const totalDuration = getTotalDuration()
-    const averageDuration = getAverageDuration()
-    const modeDistribution = getModeDistribution()
+    const totalDuration = sessions.reduce((sum, s) => sum + s.duration, 0)
+    const averageDuration = sessions.length > 0 ? totalDuration / sessions.length : 0
+    
+    const modeDistribution: Record<string, { count: number; totalDuration: number }> = {}
+    sessions.forEach(s => {
+      if (!modeDistribution[s.mode]) {
+        modeDistribution[s.mode] = { count: 0, totalDuration: 0 }
+      }
+      modeDistribution[s.mode].count++
+      modeDistribution[s.mode].totalDuration += s.duration
+    })
 
     const stats = [
-      { label: '总训练时长', value: formatDuration(totalDuration), icon: '⏱️' },
-      { label: '训练次数', value: `${history.length}次`, icon: '📊' },
+      { label: `${periodLabel}时长`, value: formatDuration(totalDuration), icon: '⏱️' },
+      { label: '训练次数', value: `${sessions.length}次`, icon: '📊' },
       { label: '平均时长', value: formatDuration(averageDuration), icon: '⏰' },
       { label: '连续训练', value: `${streak}天`, icon: '🔥' },
     ]
@@ -129,10 +181,17 @@ export function useShare() {
       carousel: { label: '颜色轮播', icon: '🎨' },
       tracking: { label: '视觉追踪', icon: '👁️' },
       calm: { label: '舒缓放松', icon: '🧘' },
-      excite: { label: '兴奋刺激', icon: '⚡' }
+      excite: { label: '兴奋刺激', icon: '⚡' },
+      'eye-movement': { label: '眼球运动', icon: '👀' },
+      focus: { label: '视觉聚焦', icon: '🎯' },
+      'red-blue': { label: '红蓝刺激', icon: '🔴🔵' },
+      cognitive: { label: '认知训练', icon: '🧠' },
+      breathing: { label: '呼吸训练', icon: '🌬️' },
+      sensory: { label: '多感官刺激', icon: '✨' },
     }
 
-    Object.entries(modeDistribution).forEach(([mode, data], index) => {
+    const modeEntries = Object.entries(modeDistribution).slice(0, 5)
+    modeEntries.forEach(([mode, data], index) => {
       const info = modeLabels[mode] || { label: mode, icon: '📋' }
       const y = modeY + 40 + index * 50
 
@@ -153,7 +212,7 @@ export function useShare() {
       ctx.textAlign = 'right'
       ctx.fillText(`${data.count}次 · ${formatDuration(data.totalDuration)}`, canvas.width - 70, y + 27)
 
-      const progressWidth = (data.count / history.length) * (canvas.width - 140)
+      const progressWidth = (data.count / Math.max(sessions.length, 1)) * (canvas.width - 140)
       const progressGradient = ctx.createLinearGradient(70, 0, 70 + progressWidth, 0)
       progressGradient.addColorStop(0, '#00e5ff')
       progressGradient.addColorStop(1, '#ff00e5')
@@ -173,8 +232,8 @@ export function useShare() {
     return canvas.toDataURL('image/png')
   }
 
-  const shareText = async () => {
-    const text = generateTextReport()
+  const shareText = async (period: ReportPeriod = 'all') => {
+    const text = generateTextReport(period)
     
     if (navigator.share) {
       try {
@@ -196,8 +255,8 @@ export function useShare() {
     return false
   }
 
-  const shareImage = async () => {
-    const dataUrl = await generateImageReport()
+  const shareImage = async (period: ReportPeriod = 'all') => {
+    const dataUrl = await generateImageReport(period)
     if (!dataUrl) return false
 
     if (navigator.share) {
@@ -223,8 +282,8 @@ export function useShare() {
     return true
   }
 
-  const copyToClipboard = async () => {
-    const text = generateTextReport()
+  const copyToClipboard = async (period: ReportPeriod = 'all') => {
+    const text = generateTextReport(period)
     if (navigator.clipboard) {
       await navigator.clipboard.writeText(text)
       return true
@@ -237,6 +296,6 @@ export function useShare() {
     generateImageReport,
     shareText,
     shareImage,
-    copyToClipboard
+    copyToClipboard,
   }
 }

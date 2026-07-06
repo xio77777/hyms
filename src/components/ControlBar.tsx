@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
-import { ArrowLeft, Pause, Play, Maximize, Eye, CloudRain, Zap, Palette, Timer, Volume2, VolumeX, Clock, RotateCcw } from 'lucide-react'
+import { ArrowLeft, Pause, Play, Maximize, Eye, CloudRain, Zap, Palette, Timer, Volume2, VolumeX, Clock, RotateCcw, Music } from 'lucide-react'
 import { useTrainingStore, type TrainingMode } from '@/store/trainingStore'
 import { useNavigate } from 'react-router-dom'
 import CastButton from '@/components/CastButton'
 import { useCast } from '@/hooks/useCast'
+import { useAmbientSound, AMBIENT_SOUNDS } from '@/hooks/useAmbientSound'
 
 interface ModeOption {
   key: TrainingMode
@@ -28,7 +29,11 @@ const TIMER_OPTIONS = [
   { label: '30分钟', minutes: 30 },
 ]
 
-export default function ControlBar() {
+interface ControlBarProps {
+  onQuickStart?: (minutes: number) => void
+}
+
+export default function ControlBar({ onQuickStart }: ControlBarProps) {
   const navigate = useNavigate()
   const {
     mode, speed, brightness, isPaused,
@@ -39,6 +44,7 @@ export default function ControlBar() {
     updateSettings, speak
   } = useTrainingStore()
   const { isConnected, sendUpdate } = useCast()
+  const { currentSound, volume, enabled, selectSound, setVolume, toggleEnabled } = useAmbientSound()
 
   useEffect(() => {
     if (isConnected) {
@@ -86,6 +92,10 @@ export default function ControlBar() {
   }
 
   const startTimer = (minutes: number) => {
+    if (onQuickStart) {
+      onQuickStart(minutes)
+      return
+    }
     updateSettings({ timerMinutes: minutes, timerEnabled: true })
     setTimerSeconds(0)
     setTimerActive(true)
@@ -284,6 +294,66 @@ export default function ControlBar() {
                           {opt.label}
                         </button>
                       ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="relative group">
+                <button
+                  onClick={toggleEnabled}
+                  className={`transition-colors p-1 sm:p-2 rounded-lg ${
+                    enabled
+                      ? 'text-neon-magenta hover:bg-neon-magenta/10'
+                      : 'text-white/40 hover:text-white/60 hover:bg-white/10'
+                  }`}
+                  title={enabled ? '关闭环境音' : '环境音效'}
+                >
+                  <Music className="w-4 h-4" />
+                </button>
+                
+                <div className="absolute bottom-full right-0 mb-2 hidden group-hover:block z-50">
+                  <div className="bg-gray-900/95 backdrop-blur-xl border border-white/10 rounded-xl p-3 shadow-2xl min-w-[220px]">
+                    <div className="text-white/80 text-sm font-medium mb-3 flex items-center gap-2">
+                      <Music className="w-4 h-4 text-neon-magenta" />
+                      环境音效
+                    </div>
+                    
+                    <div className="grid grid-cols-3 gap-2 mb-3">
+                      {AMBIENT_SOUNDS.filter(s => s.id !== 'none').map((sound) => (
+                        <button
+                          key={sound.id}
+                          onClick={() => selectSound(sound.id)}
+                          className={`flex flex-col items-center gap-1 p-2 rounded-lg transition-all ${
+                            currentSound === sound.id && enabled
+                              ? 'bg-neon-magenta/20 border border-neon-magenta/40 text-neon-magenta'
+                              : 'bg-white/5 hover:bg-white/10 text-white/60 hover:text-white border border-transparent'
+                          }`}
+                        >
+                          <span className="text-xl">{sound.icon}</span>
+                          <span className="text-xs">{sound.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <VolumeX className="w-3.5 h-3.5 text-white/40" />
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        value={volume}
+                        onChange={(e) => setVolume(parseFloat(e.target.value))}
+                        className="flex-1 h-1 bg-white/20 rounded-full appearance-none cursor-pointer
+                          [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
+                          [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-magenta
+                          [&::-webkit-slider-thumb]:shadow-[0_0_8px_rgba(255,0,255,0.5)]"
+                      />
+                      <Volume2 className="w-3.5 h-3.5 text-white/40" />
+                    </div>
+                    <div className="text-center text-white/40 text-xs mt-1">
+                      {Math.round(volume * 100)}%
                     </div>
                   </div>
                 </div>
