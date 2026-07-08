@@ -1,187 +1,282 @@
 import { useNavigate } from 'react-router-dom'
-import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History, Bell } from 'lucide-react'
+import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History, Bell, Settings, Moon, Sun, Type } from 'lucide-react'
 import CastButton from '@/components/CastButton'
 import { useTrainingStore } from '@/store/trainingStore'
+import { useState } from 'react'
 
 interface TrainingCardProps {
+  key: string
   title: string
   description: string
   icon: React.ReactNode
-  gradient: string
+  color: string
   onClick: () => void
-  disabled?: boolean
 }
 
-/**
- * 训练入口卡片组件
- * 玻璃拟态风格，hover 发光效果
- */
-function TrainingCard({ title, description, icon, gradient, onClick, disabled }: TrainingCardProps) {
+function TrainingCard({ title, description, icon, color, onClick }: TrainingCardProps) {
   return (
     <button
       onClick={onClick}
-      disabled={disabled}
       className={`
-        group relative overflow-hidden rounded-2xl
+        relative rounded-3xl
         bg-white/5 backdrop-blur-md
-        border border-white/10
-        p-6 text-left transition-all duration-500
-        hover:bg-white/10 hover:border-white/20
-        hover:shadow-[0_0_40px_rgba(0,229,255,0.15)]
-        hover:scale-[1.02]
-        active:scale-[0.98]
-        min-h-[180px]
+        border-2 ${color}
+        p-8 text-left transition-all duration-300
+        hover:bg-white/10 hover:scale-[1.03]
+        active:scale-[0.97]
+        min-h-[220px]
         flex flex-col justify-between
-        ${disabled ? 'opacity-40 cursor-not-allowed hover:scale-100 hover:bg-white/5 hover:border-white/10 hover:shadow-none' : ''}
+        w-full
+        focus:outline-none focus:ring-4 focus:ring-white/30
       `}
     >
-      <div
-        className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700 ${gradient}`}
-      />
-      <div className="relative z-10">
-        <div className="mb-3 text-white/80 group-hover:text-white transition-colors">
-          {icon}
-        </div>
-        <h3 className="text-xl font-bold text-white mb-1">{title}</h3>
-        <p className="text-white/50 text-sm leading-relaxed">{description}</p>
+      <div className={`mb-4 ${color}`}>
+        {icon}
       </div>
-      {!disabled && (
-        <div className="relative z-10 mt-3 flex items-center text-white/40 group-hover:text-neon-cyan transition-colors text-xs">
-          <span>开始训练</span>
-          <svg className="ml-1 w-3 h-3 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </div>
-      )}
+      <div>
+        <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+        <p className="text-white/60 text-base leading-relaxed">{description}</p>
+      </div>
     </button>
   )
 }
 
-const TRAINING_MODULES = [
+const CORE_TRAINING = [
   {
     title: '多感官刺激',
-    description: '视觉追踪训练与情绪调节灯光，锻炼视神经灵活性与专注力',
-    icon: <Eye className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-cyan/10 via-transparent to-neon-magenta/10',
+    description: '视觉追踪训练与情绪调节灯光',
+    icon: <Eye className="w-14 h-14" />,
+    color: 'border-neon-cyan/40 text-neon-cyan',
     path: '/sensory',
   },
   {
-    title: '眼球运动引导',
-    description: '引导光点按轨迹移动，锻炼眼肌力量和灵活性',
-    icon: <CircleDot className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-cyan/10 via-transparent to-calm-sky/10',
+    title: '眼球运动',
+    description: '引导光点按轨迹移动，锻炼眼肌',
+    icon: <CircleDot className="w-14 h-14" />,
+    color: 'border-neon-magenta/40 text-neon-magenta',
     path: '/eye-movement',
   },
   {
-    title: '红蓝光交替刺激',
-    description: '红光激活视觉通路，蓝光舒缓神经，专业推荐的视神经激活方法',
-    icon: <Waves className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-red-500/10 via-transparent to-blue-500/10',
+    title: '红蓝光刺激',
+    description: '红光激活视觉通路，蓝光舒缓神经',
+    icon: <Waves className="w-14 h-14" />,
+    color: 'border-red-400/40 text-red-400',
     path: '/red-blue',
   },
+]
+
+const SUPPLEMENTAL_TRAINING = [
   {
-    title: '视觉聚焦训练',
-    description: '目标远近切换，引导视线聚焦，改善视力模糊和聚焦能力',
-    icon: <Focus className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-gold/10 via-transparent to-neon-cyan/10',
+    title: '视觉聚焦',
+    description: '目标远近切换，改善聚焦能力',
+    icon: <Focus className="w-12 h-12" />,
+    color: 'border-neon-gold/40 text-neon-gold',
     path: '/focus',
   },
   {
-    title: '认知记忆训练',
-    description: '数字排序与记忆翻牌游戏，锻炼注意力、记忆力和执行功能',
-    icon: <Brain className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-calm-lavender/10',
+    title: '认知记忆',
+    description: '数字排序与记忆翻牌游戏',
+    icon: <Brain className="w-12 h-12" />,
+    color: 'border-calm-lavender/40 text-calm-lavender',
     path: '/cognitive',
   },
-  {
-    title: '画中画模式',
-    description: '投屏到电视后，手机端继续显示控制界面，训练更便捷',
-    icon: <Tv className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-gold/10 via-transparent to-neon-cyan/10',
-    path: '/pip',
-  },
-  {
-    title: '训练统计',
-    description: '查看训练时长、次数和历史记录，了解康复进展',
-    icon: <BarChart3 className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-magenta/10 via-transparent to-neon-gold/10',
-    path: '/stats',
-  },
+]
+
+const TOOLS = [
   {
     title: '训练计划',
-    description: '预设训练组合，一键开始系统化训练，支持自定义创建',
-    icon: <ListChecks className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-neon-cyan/10 via-transparent to-neon-gold/10',
+    description: '预设训练组合',
+    icon: <ListChecks className="w-10 h-10" />,
+    color: 'border-white/20 text-white/60',
     path: '/plan',
   },
   {
+    title: '训练统计',
+    description: '查看康复进展',
+    icon: <BarChart3 className="w-10 h-10" />,
+    color: 'border-white/20 text-white/60',
+    path: '/stats',
+  },
+  {
     title: '训练历史',
-    description: '查看每日训练记录、模式分布和长期趋势分析',
-    icon: <History className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-calm-lavender/10 via-transparent to-calm-sky/10',
+    description: '查看记录',
+    icon: <History className="w-10 h-10" />,
+    color: 'border-white/20 text-white/60',
     path: '/history',
   },
   {
     title: '训练提醒',
-    description: '定时提醒，帮助养成规律训练的好习惯',
-    icon: <Bell className="w-8 h-8" />,
-    gradient: 'bg-gradient-to-br from-amber-500/10 via-transparent to-orange-500/10',
+    description: '定时提醒',
+    icon: <Bell className="w-10 h-10" />,
+    color: 'border-white/20 text-white/60',
     path: '/reminders',
   },
 ]
 
-/**
- * 首页
- * 展示所有训练模式入口卡片列表
- */
 export default function Home() {
   const navigate = useNavigate()
+  const { settings, updateSettings, speak } = useTrainingStore()
+  const [showAccessibilityMenu, setShowAccessibilityMenu] = useState(false)
+
+  const toggleHighContrast = () => {
+    updateSettings({ highContrast: !settings.highContrast })
+    speak(settings.highContrast ? '高对比度模式已关闭' : '高对比度模式已开启')
+  }
+
+  const toggleLargeFont = () => {
+    updateSettings({ largeFont: !settings.largeFont })
+    speak(settings.largeFont ? '大字体模式已关闭' : '大字体模式已开启')
+  }
 
   return (
-    <div className="h-full w-full bg-dark flex flex-col overflow-y-auto">
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-neon-cyan/5 rounded-full blur-[120px] animate-float" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-neon-magenta/5 rounded-full blur-[100px] animate-float" style={{ animationDelay: '2s' }} />
-        <div className="absolute top-1/2 left-1/2 w-72 h-72 bg-neon-gold/3 rounded-full blur-[80px] animate-float" style={{ animationDelay: '4s' }} />
-      </div>
+    <div className={`h-full w-full bg-dark flex flex-col overflow-y-auto ${settings.largeFont ? 'text-lg' : ''} ${settings.highContrast ? 'high-contrast' : ''}`}>
+      <div className="relative z-10 flex-1 flex flex-col px-4 py-8 sm:px-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
+            <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${settings.highContrast ? 'bg-white text-black' : 'bg-neon-cyan/20 text-neon-cyan'}`}>
+              <Eye className="w-6 h-6" />
+            </div>
+            <div>
+              <h1 className={`text-2xl sm:text-3xl font-black text-white ${settings.largeFont ? 'text-3xl sm:text-4xl' : ''}`}>
+                康复训练
+              </h1>
+              <p className="text-white/40 text-sm">HYMS 系统</p>
+            </div>
+          </div>
 
-      <div className="relative z-10 flex-1 flex flex-col items-center justify-center px-8 py-12">
-        <div className="absolute top-4 right-4 z-20">
-          <CastButton />
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <button
+                onClick={() => setShowAccessibilityMenu(!showAccessibilityMenu)}
+                className={`
+                  p-3 rounded-xl transition-all
+                  ${settings.highContrast ? 'bg-white text-black' : 'bg-white/10 text-white/70 hover:bg-white/20'}
+                `}
+                aria-label="无障碍设置"
+              >
+                <Settings className="w-6 h-6" />
+              </button>
+
+              {showAccessibilityMenu && (
+                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 min-w-[240px] shadow-2xl z-50">
+                  <h3 className="text-white font-medium mb-4">无障碍设置</h3>
+                  <div className="space-y-3">
+                    <button
+                      onClick={toggleHighContrast}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                        settings.highContrast
+                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                      }`}
+                    >
+                      <Sun className="w-5 h-5" />
+                      <span>{settings.highContrast ? '关闭' : '开启'}高对比度</span>
+                    </button>
+                    <button
+                      onClick={toggleLargeFont}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                        settings.largeFont
+                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                      }`}
+                    >
+                      <Type className="w-5 h-5" />
+                      <span>{settings.largeFont ? '关闭' : '开启'}大字体</span>
+                    </button>
+                    <button
+                      onClick={() => {
+                        updateSettings({ voiceEnabled: !settings.voiceEnabled })
+                        speak(settings.voiceEnabled ? '语音播报已关闭' : '语音播报已开启')
+                      }}
+                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                        settings.voiceEnabled
+                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                      }`}
+                    >
+                      <Moon className="w-5 h-5" />
+                      <span>{settings.voiceEnabled ? '关闭' : '开启'}语音播报</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+            <CastButton />
+          </div>
         </div>
 
-        <header className="text-center mb-12">
-          <h1 className="text-5xl font-black text-white mb-3 tracking-wide">
-            <span className="bg-gradient-to-r from-neon-cyan via-neon-magenta to-neon-gold bg-clip-text text-transparent">
-              康复视神经训练
-            </span>
-          </h1>
-          <p className="text-white/40 text-lg">
-            HYMS · 多感官刺激康复系统
-          </p>
-        </header>
-
-        <div className="w-full max-w-4xl">
-          <h2 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-6 pl-2">
-            训练模式
+        <section className="mb-10">
+          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+            核心训练
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {TRAINING_MODULES.map((mod) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {CORE_TRAINING.map((mod) => (
               <TrainingCard
                 key={mod.path}
                 title={mod.title}
                 description={mod.description}
                 icon={mod.icon}
-                gradient={mod.gradient}
-                onClick={() => navigate(mod.path)}
+                color={mod.color}
+                onClick={() => {
+                  speak(`${mod.title}训练开始`)
+                  navigate(mod.path)
+                }}
               />
             ))}
           </div>
-        </div>
+        </section>
+
+        <section className="mb-10">
+          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+            辅助训练
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {SUPPLEMENTAL_TRAINING.map((mod) => (
+              <TrainingCard
+                key={mod.path}
+                title={mod.title}
+                description={mod.description}
+                icon={mod.icon}
+                color={mod.color}
+                onClick={() => {
+                  speak(`${mod.title}训练开始`)
+                  navigate(mod.path)
+                }}
+              />
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+            工具
+          </h2>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {TOOLS.map((mod) => (
+              <button
+                key={mod.path}
+                onClick={() => navigate(mod.path)}
+                className={`
+                  rounded-2xl bg-white/5 backdrop-blur-md
+                  border border-white/10
+                  p-4 flex flex-col items-center gap-2
+                  transition-all duration-300
+                  hover:bg-white/10 hover:scale-[1.03]
+                  active:scale-[0.97]
+                  min-h-[120px]
+                  justify-center
+                `}
+              >
+                <span className={mod.color}>{mod.icon}</span>
+                <span className="text-white/80 text-sm font-medium">{mod.title}</span>
+              </button>
+            ))}
+          </div>
+        </section>
       </div>
 
       <footer className="relative z-10 text-center py-6 text-white/20 text-xs">
-        HYMS · 康复视神经训练系统 · 仅供康复辅助使用
+        HYMS · 康复视神经训练系统
       </footer>
     </div>
   )

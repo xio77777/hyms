@@ -13,6 +13,8 @@ interface TrainingSettings {
   timerEnabled: boolean
   timerMinutes: number
   autoResume: boolean
+  highContrast: boolean
+  largeFont: boolean
 }
 
 interface TrainingState {
@@ -80,6 +82,8 @@ const defaultSettings: TrainingSettings = {
   timerEnabled: false,
   timerMinutes: 5,
   autoResume: false,
+  highContrast: false,
+  largeFont: false,
 }
 
 const loaded = loadFromStorage()
