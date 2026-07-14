@@ -1,9 +1,10 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, Pause, Play, Volume2, VolumeX, Clock, RotateCcw, Sun, Zap, Timer } from 'lucide-react'
 import { useTrainingStore, type TrainingMode } from '@/store/trainingStore'
 import { useNavigate } from 'react-router-dom'
 import CastButton from '@/components/CastButton'
 import { useCast } from '@/hooks/useCast'
+import { useKeyboardNav } from '@/hooks/useKeyboardNav'
 
 interface ModeOption {
   key: TrainingMode
@@ -18,6 +19,12 @@ const MODES: ModeOption[] = [
   { key: 'excite', label: '兴奋', icon: <Zap className="w-6 h-6" />, color: 'border-neon-gold text-neon-gold' },
 ]
 
+const SPEED_PRESETS = [
+  { label: '慢', value: 0.5 },
+  { label: '中', value: 1 },
+  { label: '快', value: 1.5 },
+]
+
 const TIMER_OPTIONS = [
   { label: '3分', minutes: 3 },
   { label: '5分', minutes: 5 },
@@ -27,6 +34,7 @@ const TIMER_OPTIONS = [
 
 export default function ControlBar() {
   const navigate = useNavigate()
+  const [showTimerMenu, setShowTimerMenu] = useState(false)
   const {
     mode, speed, brightness, isPaused,
     timerSeconds, timerActive, timerCompleted,
@@ -36,6 +44,19 @@ export default function ControlBar() {
     updateSettings, speak
   } = useTrainingStore()
   const { isConnected, sendUpdate } = useCast()
+
+  const handleBack = () => {
+    speak('返回首页')
+    navigate('/')
+  }
+
+  useKeyboardNav(() => {
+    if (showTimerMenu) {
+      setShowTimerMenu(false)
+    } else {
+      handleBack()
+    }
+  })
 
   useEffect(() => {
     if (isConnected) {
@@ -78,7 +99,13 @@ export default function ControlBar() {
     setTimerSeconds(0)
     setTimerActive(true)
     setTimerCompleted(false)
+    setShowTimerMenu(false)
     speak(`${minutes}分钟训练开始`)
+  }
+
+  const handleSpeedChange = (value: number, label: string) => {
+    setSpeed(value)
+    speak(`速度${label}`)
   }
 
   const stopTimer = () => {
@@ -97,11 +124,6 @@ export default function ControlBar() {
   const getElapsedPercent = () => {
     if (!settings.timerEnabled) return 0
     return Math.min((timerSeconds / (settings.timerMinutes * 60)) * 100, 100)
-  }
-
-  const handleBack = () => {
-    speak('返回首页')
-    navigate('/')
   }
 
   const handlePause = () => {
@@ -181,21 +203,26 @@ export default function ControlBar() {
           </div>
 
           <div className="flex items-center justify-center gap-4 w-full">
-            <div className="flex items-center gap-3 bg-white/5 rounded-2xl px-4 py-3">
+            <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3">
               <span className="text-white/60 text-sm w-10">速度</span>
-              <input
-                type="range"
-                min="0.2"
-                max="3"
-                step="0.1"
-                value={speed}
-                onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                className="w-32 h-3 bg-white/20 rounded-full appearance-none cursor-pointer
-                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:h-6
-                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-cyan
-                  [&::-webkit-slider-thumb]:shadow-[0_0_15px_rgba(0,229,255,0.6)]"
-              />
-              <span className="text-white font-mono text-sm w-10">{speed.toFixed(1)}x</span>
+              {SPEED_PRESETS.map((preset) => {
+                const isActive = Math.abs(speed - preset.value) < 0.05
+                return (
+                  <button
+                    key={preset.label}
+                    onClick={() => handleSpeedChange(preset.value, preset.label)}
+                    className={`
+                      px-5 py-2 rounded-xl text-base font-medium transition-all min-w-[56px]
+                      ${isActive
+                        ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40'
+                        : 'text-white/50 hover:text-white/80 border-2 border-transparent hover:bg-white/5'
+                      }
+                    `}
+                  >
+                    {preset.label}
+                  </button>
+                )
+              })}
             </div>
 
             <div className="flex items-center gap-3 bg-white/5 rounded-2xl px-4 py-3">
@@ -255,17 +282,20 @@ export default function ControlBar() {
 
             <div className="relative">
               <button
+                onClick={() => !timerActive && setShowTimerMenu(!showTimerMenu)}
                 className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${
                   timerActive
                     ? 'bg-neon-magenta/20 text-neon-magenta border-2 border-neon-magenta/40'
-                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                    : showTimerMenu
+                      ? 'bg-neon-magenta/20 text-neon-magenta border-2 border-neon-magenta/40'
+                      : 'text-white/70 hover:text-white hover:bg-white/10 border-2 border-transparent'
                 }`}
               >
                 <Clock className="w-6 h-6" />
                 <span className="text-base">计时</span>
               </button>
-              
-              {!timerActive && (
+
+              {showTimerMenu && !timerActive && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2">
                   <div className="bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                     <div className="text-white/60 text-sm mb-3 text-center">选择时长</div>

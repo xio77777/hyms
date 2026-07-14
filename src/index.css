@@ -66,6 +66,26 @@
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+.large-font {
+  font-size: 1.15rem;
+}
+
+.large-font h1 {
+  font-size: 2.5rem !important;
+}
+
+.large-font h2 {
+  font-size: 1.5rem !important;
+}
+
+.large-font h3 {
+  font-size: 1.5rem !important;
+}
+
+.large-font button {
+  font-size: 1.1rem;
+}
+
 * {
   margin: 0;
   padding: 0;

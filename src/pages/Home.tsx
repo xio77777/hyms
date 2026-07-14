@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom'
 import { Eye, CircleDot, Waves, Focus, Brain, Tv, BarChart3, ListChecks, History, Bell, Settings, Moon, Sun, Type } from 'lucide-react'
 import CastButton from '@/components/CastButton'
 import { useTrainingStore } from '@/store/trainingStore'
+import { useKeyboardNav } from '@/hooks/useKeyboardNav'
 import { useState } from 'react'
 
 interface TrainingCardProps {
@@ -118,6 +119,12 @@ export default function Home() {
   const { settings, updateSettings, speak } = useTrainingStore()
   const [showAccessibilityMenu, setShowAccessibilityMenu] = useState(false)
 
+  useKeyboardNav(() => {
+    if (showAccessibilityMenu) {
+      setShowAccessibilityMenu(false)
+    }
+  })
+
   const toggleHighContrast = () => {
     updateSettings({ highContrast: !settings.highContrast })
     speak(settings.highContrast ? '高对比度模式已关闭' : '高对比度模式已开启')
@@ -129,7 +136,7 @@ export default function Home() {
   }
 
   return (
-    <div className={`h-full w-full bg-dark flex flex-col overflow-y-auto ${settings.largeFont ? 'text-lg' : ''} ${settings.highContrast ? 'high-contrast' : ''}`}>
+    <div className="h-full w-full bg-dark flex flex-col overflow-y-auto">
       <div className="relative z-10 flex-1 flex flex-col px-4 py-8 sm:px-8">
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-3">
@@ -137,7 +144,7 @@ export default function Home() {
               <Eye className="w-6 h-6" />
             </div>
             <div>
-              <h1 className={`text-2xl sm:text-3xl font-black text-white ${settings.largeFont ? 'text-3xl sm:text-4xl' : ''}`}>
+              <h1 className="text-2xl sm:text-3xl font-black text-white">
                 康复训练
               </h1>
               <p className="text-white/40 text-sm">HYMS 系统</p>
@@ -206,7 +213,7 @@ export default function Home() {
         </div>
 
         <section className="mb-10">
-          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+          <h2 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-4">
             核心训练
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
@@ -227,7 +234,7 @@ export default function Home() {
         </section>
 
         <section className="mb-10">
-          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+          <h2 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-4">
             辅助训练
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -248,7 +255,7 @@ export default function Home() {
         </section>
 
         <section>
-          <h2 className={`text-white/50 text-sm font-medium uppercase tracking-widest mb-4 ${settings.largeFont ? 'text-base' : ''}`}>
+          <h2 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-4">
             工具
           </h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">

@@ -6,7 +6,7 @@ import { renderCalm } from '@/renderers/CalmRenderer'
 import { renderExcite } from '@/renderers/ExciteRenderer'
 import { renderColorCarousel } from '@/renderers/ColorCarouselRenderer'
 import ControlBar from '@/components/ControlBar'
-import { ArrowLeft, Pause, Play } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
 const MODE_LABELS = {
@@ -29,7 +29,7 @@ export default function SensoryTraining() {
   const setSpeed = useTrainingStore((s) => s.setSpeed)
   const setBrightness = useTrainingStore((s) => s.setBrightness)
   const togglePause = useTrainingStore((s) => s.togglePause)
-  const isPaused = useTrainingStore((s) => s.isPaused)
+  const speak = useTrainingStore((s) => s.speak)
   const [showControls, setShowControls] = useState(true)
 
   const isCastMode = typeof window !== 'undefined' &&
@@ -93,6 +93,11 @@ export default function SensoryTraining() {
     }
   }
 
+  const handleBack = () => {
+    speak('返回首页')
+    navigate('/')
+  }
+
   return (
     <div className="h-screen w-screen bg-dark relative m-0 p-0 overflow-hidden">
       <canvas
@@ -102,9 +107,9 @@ export default function SensoryTraining() {
       />
 
       {!isCastMode && showControls && (
-        <div className="absolute top-6 left-6 z-20">
-          <div className="bg-black/40 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/10">
-            <span className="text-white/70 text-sm font-medium">
+        <div className="absolute top-4 left-4 z-20">
+          <div className="bg-black/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
+            <span className="text-white/80 text-lg font-medium">
               {MODE_LABELS[mode]}
             </span>
           </div>
@@ -112,13 +117,13 @@ export default function SensoryTraining() {
       )}
 
       {!isCastMode && showControls && (
-        <div className="absolute top-6 right-6 z-20">
+        <div className="absolute top-4 right-4 z-20">
           <button
-            onClick={() => navigate('/')}
-            className="flex items-center gap-2 text-white/60 hover:text-white transition-colors px-3 py-2 rounded-lg bg-black/40 backdrop-blur-sm border border-white/10 hover:bg-black/50"
+            onClick={handleBack}
+            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/70"
           >
-            <ArrowLeft className="w-5 h-5" />
-            <span className="text-sm">返回</span>
+            <ArrowLeft className="w-6 h-6" />
+            <span className="text-base">返回</span>
           </button>
         </div>
       )}
