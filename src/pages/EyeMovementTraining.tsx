@@ -1,14 +1,20 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useCanvas } from '@/hooks/useCanvas'
 import { useTrainingStore } from '@/store/trainingStore'
 import { renderEyeMovement } from '@/renderers/EyeMovementRenderer'
 import ControlBar from '@/components/ControlBar'
-import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import CountdownOverlay from '@/components/CountdownOverlay'
 
 export default function EyeMovementTraining() {
-  const navigate = useNavigate()
   const { speak } = useTrainingStore()
+  const [showControls, setShowControls] = useState(true)
+  const [showCountdown, setShowCountdown] = useState(true)
+
+  useEffect(() => {
+    document.body.style.margin = '0'
+    document.body.style.padding = '0'
+    document.body.style.overflow = 'hidden'
+  }, [])
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, timestamp: number) => {
@@ -23,35 +29,42 @@ export default function EyeMovementTraining() {
 
   const canvasRef = useCanvas(render)
 
+  const handleCanvasClick = () => {
+    if (!showCountdown) {
+      setShowControls((prev) => !prev)
+    }
+  }
+
   return (
-    <div className="h-full w-full bg-dark relative">
+    <div className="h-screen w-screen bg-dark relative m-0 p-0 overflow-hidden">
       <canvas
         ref={canvasRef}
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 w-full h-full cursor-pointer"
+        onClick={handleCanvasClick}
       />
 
-      <div className="absolute top-4 right-4 z-20">
-        <button
-          onClick={() => {
-            speak('返回首页')
-            navigate('/')
-          }}
-          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/70"
-        >
-          <ArrowLeft className="w-6 h-6" />
-          <span className="text-base">返回</span>
-        </button>
-      </div>
+      {showCountdown && (
+        <CountdownOverlay
+          trainingName="眼球运动训练"
+          onComplete={() => setShowCountdown(false)}
+        />
+      )}
 
-      <div className="absolute top-4 left-4 z-20">
-        <div className="bg-black/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
-          <span className="text-white/80 text-lg font-medium">
-            眼球运动引导
-          </span>
+      {showControls && !showCountdown && (
+        <div className="absolute top-4 left-4 z-20">
+          <div className="bg-black/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
+            <span className="text-white/80 text-lg font-medium">
+              眼球运动引导
+            </span>
+          </div>
         </div>
-      </div>
+      )}
 
-      <ControlBar />
+      {!showCountdown && (
+        <div style={{ opacity: showControls ? 1 : 0, pointerEvents: showControls ? 'auto' : 'none' }} className="transition-opacity duration-300">
+          <ControlBar />
+        </div>
+      )}
     </div>
   )
 }

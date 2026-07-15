@@ -6,6 +6,7 @@ import { renderCalm } from '@/renderers/CalmRenderer'
 import { renderExcite } from '@/renderers/ExciteRenderer'
 import { renderColorCarousel } from '@/renderers/ColorCarouselRenderer'
 import ControlBar from '@/components/ControlBar'
+import CountdownOverlay from '@/components/CountdownOverlay'
 import { ArrowLeft } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 
@@ -16,12 +17,6 @@ const MODE_LABELS = {
   excite: '兴奋模式',
 }
 
-/**
- * 多感官刺激训练页
- * 全屏 Canvas 动画 + 底部控制栏
- * 支持投屏模式：URL带cast=true时隐藏控制栏，接收手机端状态同步
- * 点击画面区域可隐藏/显示控制栏（投屏时全屏显示训练内容）
- */
 export default function SensoryTraining() {
   const navigate = useNavigate()
   const mode = useTrainingStore((s) => s.mode)
@@ -31,6 +26,7 @@ export default function SensoryTraining() {
   const togglePause = useTrainingStore((s) => s.togglePause)
   const speak = useTrainingStore((s) => s.speak)
   const [showControls, setShowControls] = useState(true)
+  const [showCountdown, setShowCountdown] = useState(true)
 
   const isCastMode = typeof window !== 'undefined' &&
     new URLSearchParams(window.location.search).get('cast') === 'true'
@@ -88,7 +84,7 @@ export default function SensoryTraining() {
   const canvasRef = useCanvas(render)
 
   const handleCanvasClick = () => {
-    if (!isCastMode) {
+    if (!isCastMode && !showCountdown) {
       setShowControls((prev) => !prev)
     }
   }
@@ -96,6 +92,10 @@ export default function SensoryTraining() {
   const handleBack = () => {
     speak('返回首页')
     navigate('/')
+  }
+
+  const handleCountdownComplete = () => {
+    setShowCountdown(false)
   }
 
   return (
@@ -106,7 +106,14 @@ export default function SensoryTraining() {
         onClick={handleCanvasClick}
       />
 
-      {!isCastMode && showControls && (
+      {showCountdown && !isCastMode && (
+        <CountdownOverlay
+          trainingName={MODE_LABELS[mode]}
+          onComplete={handleCountdownComplete}
+        />
+      )}
+
+      {!isCastMode && showControls && !showCountdown && (
         <div className="absolute top-4 left-4 z-20">
           <div className="bg-black/60 backdrop-blur-sm rounded-xl px-6 py-3 border border-white/10">
             <span className="text-white/80 text-lg font-medium">
@@ -116,7 +123,7 @@ export default function SensoryTraining() {
         </div>
       )}
 
-      {!isCastMode && showControls && (
+      {!isCastMode && showControls && !showCountdown && (
         <div className="absolute top-4 right-4 z-20">
           <button
             onClick={handleBack}
@@ -128,7 +135,11 @@ export default function SensoryTraining() {
         </div>
       )}
 
-      {!isCastMode && showControls && <ControlBar />}
+      {!isCastMode && !showCountdown && (
+        <div style={{ opacity: showControls ? 1 : 0, pointerEvents: showControls ? 'auto' : 'none' }} className="transition-opacity duration-300">
+          <ControlBar />
+        </div>
+      )}
     </div>
   )
 }
