@@ -50,19 +50,19 @@
   border-width: 3px !important;
 }
 
-.high-contrast .bg-white/5 {
+.high-contrast [class*="bg-white\\/5"] {
   background-color: rgba(255, 255, 255, 0.1) !important;
 }
 
-.high-contrast .text-white/40 {
+.high-contrast [class*="text-white\\/40"] {
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-.high-contrast .text-white/50 {
+.high-contrast [class*="text-white\\/50"] {
   color: rgba(255, 255, 255, 0.8) !important;
 }
 
-.high-contrast .text-white/60 {
+.high-contrast [class*="text-white\\/60"] {
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
