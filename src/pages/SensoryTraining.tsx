@@ -7,8 +7,6 @@ import { renderExcite } from '@/renderers/ExciteRenderer'
 import { renderColorCarousel } from '@/renderers/ColorCarouselRenderer'
 import ControlBar from '@/components/ControlBar'
 import CountdownOverlay from '@/components/CountdownOverlay'
-import { ArrowLeft } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
 
 const MODE_LABELS = {
   tracking: '视觉追踪训练',
@@ -18,13 +16,11 @@ const MODE_LABELS = {
 }
 
 export default function SensoryTraining() {
-  const navigate = useNavigate()
   const mode = useTrainingStore((s) => s.mode)
   const setMode = useTrainingStore((s) => s.setMode)
   const setSpeed = useTrainingStore((s) => s.setSpeed)
   const setBrightness = useTrainingStore((s) => s.setBrightness)
-  const togglePause = useTrainingStore((s) => s.togglePause)
-  const speak = useTrainingStore((s) => s.speak)
+  const setIsPaused = useTrainingStore((s) => s.setIsPaused)
   const [showControls, setShowControls] = useState(true)
   const [showCountdown, setShowCountdown] = useState(true)
 
@@ -35,7 +31,11 @@ export default function SensoryTraining() {
     document.body.style.margin = '0'
     document.body.style.padding = '0'
     document.body.style.overflow = 'hidden'
-  }, [])
+    setIsPaused(false)
+    return () => {
+      setIsPaused(false)
+    }
+  }, [setIsPaused])
 
   useEffect(() => {
     if (!isCastMode) return
@@ -49,12 +49,9 @@ export default function SensoryTraining() {
       setMode(newMode as any)
       setSpeed(newSpeed)
       setBrightness(newBrightness)
-      const currentPaused = useTrainingStore.getState().isPaused
-      if (newIsPaused !== currentPaused) {
-        togglePause()
-      }
+      setIsPaused(newIsPaused)
     }
-  }, [isCastMode, setMode, setSpeed, setBrightness, togglePause])
+  }, [isCastMode, setMode, setSpeed, setBrightness, setIsPaused])
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, timestamp: number) => {
@@ -89,15 +86,6 @@ export default function SensoryTraining() {
     }
   }
 
-  const handleBack = () => {
-    speak('返回首页')
-    navigate('/')
-  }
-
-  const handleCountdownComplete = () => {
-    setShowCountdown(false)
-  }
-
   return (
     <div className="h-screen w-screen bg-dark relative m-0 p-0 overflow-hidden">
       <canvas
@@ -109,7 +97,7 @@ export default function SensoryTraining() {
       {showCountdown && !isCastMode && (
         <CountdownOverlay
           trainingName={MODE_LABELS[mode]}
-          onComplete={handleCountdownComplete}
+          onComplete={() => setShowCountdown(false)}
         />
       )}
 
@@ -120,18 +108,6 @@ export default function SensoryTraining() {
               {MODE_LABELS[mode]}
             </span>
           </div>
-        </div>
-      )}
-
-      {!isCastMode && showControls && !showCountdown && (
-        <div className="absolute top-4 right-4 z-20">
-          <button
-            onClick={handleBack}
-            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-xl bg-black/60 backdrop-blur-sm border border-white/10 hover:bg-black/70"
-          >
-            <ArrowLeft className="w-6 h-6" />
-            <span className="text-base">返回</span>
-          </button>
         </div>
       )}
 

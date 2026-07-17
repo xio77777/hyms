@@ -25,12 +25,13 @@ interface TrainingState {
   setMode: (mode: TrainingMode) => void
   setSpeed: (speed: number) => void
   setBrightness: (brightness: number) => void
+  setIsPaused: (paused: boolean) => void
   togglePause: () => void
   
   timerSeconds: number
   timerActive: boolean
   timerCompleted: boolean
-  setTimerSeconds: (seconds: number) => void
+  setTimerSeconds: (seconds: number | ((prev: number) => number)) => void
   setTimerActive: (active: boolean) => void
   setTimerCompleted: (completed: boolean) => void
   resetTimer: () => void
@@ -89,7 +90,7 @@ const defaultSettings: TrainingSettings = {
 const loaded = loadFromStorage()
 
 export const useTrainingStore = create<TrainingState>((set, get) => ({
-  mode: 'carousel',
+  mode: 'tracking',
   speed: (loaded.speed as number) || 1,
   brightness: (loaded.brightness as number) || 1,
   isPaused: false,
@@ -110,12 +111,15 @@ export const useTrainingStore = create<TrainingState>((set, get) => ({
     const state = get()
     saveToStorage({ ...state, brightness: clampedBrightness })
   },
+  setIsPaused: (paused: boolean) => set({ isPaused: paused }),
   togglePause: () => set((state) => ({ isPaused: !state.isPaused })),
   
   timerSeconds: 0,
   timerActive: false,
   timerCompleted: false,
-  setTimerSeconds: (seconds) => set({ timerSeconds: seconds }),
+  setTimerSeconds: (seconds: number | ((prev: number) => number)) => set((state) => ({
+    timerSeconds: typeof seconds === 'function' ? seconds(state.timerSeconds) : seconds
+  })),
   setTimerActive: (active) => set({ timerActive: active }),
   setTimerCompleted: (completed) => set({ timerCompleted: completed }),
   resetTimer: () => set({ timerSeconds: 0, timerActive: false, timerCompleted: false }),

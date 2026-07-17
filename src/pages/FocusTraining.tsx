@@ -6,6 +6,7 @@ import ControlBar from '@/components/ControlBar'
 import CountdownOverlay from '@/components/CountdownOverlay'
 
 export default function FocusTraining() {
+  const setIsPaused = useTrainingStore((s) => s.setIsPaused)
   const [showControls, setShowControls] = useState(true)
   const [showCountdown, setShowCountdown] = useState(true)
 
@@ -13,7 +14,11 @@ export default function FocusTraining() {
     document.body.style.margin = '0'
     document.body.style.padding = '0'
     document.body.style.overflow = 'hidden'
-  }, [])
+    setIsPaused(false)
+    return () => {
+      setIsPaused(false)
+    }
+  }, [setIsPaused])
 
   const render = useCallback(
     (ctx: CanvasRenderingContext2D, timestamp: number) => {

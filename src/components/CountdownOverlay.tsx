@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTrainingStore } from '@/store/trainingStore'
 
 interface CountdownOverlayProps {
@@ -8,14 +8,14 @@ interface CountdownOverlayProps {
 
 export default function CountdownOverlay({ trainingName, onComplete }: CountdownOverlayProps) {
   const [count, setCount] = useState(3)
+  const completedRef = useRef(false)
+  const setIsPaused = useTrainingStore((s) => s.setIsPaused)
   const speak = useTrainingStore((s) => s.speak)
-  const togglePause = useTrainingStore((s) => s.togglePause)
 
   useEffect(() => {
-    togglePause()
-
+    setIsPaused(true)
     speak(`${trainingName}准备，3`)
-    
+
     const timer = setInterval(() => {
       setCount((prev) => {
         const next = prev - 1
@@ -29,14 +29,15 @@ export default function CountdownOverlay({ trainingName, onComplete }: Countdown
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [trainingName, setIsPaused, speak])
 
   useEffect(() => {
-    if (count < 0) {
-      togglePause()
+    if (count < 0 && !completedRef.current) {
+      completedRef.current = true
+      setIsPaused(false)
       onComplete()
     }
-  }, [count])
+  }, [count, setIsPaused, onComplete])
 
   if (count < 0) return null
 

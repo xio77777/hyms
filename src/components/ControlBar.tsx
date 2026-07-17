@@ -46,7 +46,7 @@ export default function ControlBar() {
     mode, speed, brightness, isPaused,
     timerSeconds, timerActive, timerCompleted,
     settings,
-    setMode, setSpeed, setBrightness, togglePause,
+    setMode, setSpeed, setBrightness, setIsPaused, togglePause,
     setTimerSeconds, setTimerActive, setTimerCompleted, resetTimer,
     updateSettings, speak
   } = useTrainingStore()
@@ -77,24 +77,29 @@ export default function ControlBar() {
     if (!timerActive || timerCompleted) return
 
     const interval = setInterval(() => {
-      setTimerSeconds(timerSeconds + 1)
-      
-      if (timerSeconds > 0 && timerSeconds % 60 === 0) {
-        const remainingMinutes = Math.ceil((settings.timerMinutes * 60 - timerSeconds) / 60)
-        if (remainingMinutes > 0) {
-          speak(`${remainingMinutes}分钟`)
+      setTimerSeconds((prev: number) => {
+        const next = prev + 1
+        const totalSeconds = settings.timerMinutes * 60
+
+        if (next > 0 && next % 60 === 0) {
+          const remainingMinutes = Math.ceil((totalSeconds - next) / 60)
+          if (remainingMinutes > 0) {
+            speak(`${remainingMinutes}分钟`)
+          }
         }
-      }
-      
-      if (timerSeconds >= settings.timerMinutes * 60) {
-        setTimerActive(false)
-        setTimerCompleted(true)
-        speak('训练完成，按返回键回到首页')
-      }
+
+        if (next >= totalSeconds) {
+          setTimerActive(false)
+          setTimerCompleted(true)
+          speak('训练完成，按返回键回到首页')
+        }
+
+        return next
+      })
     }, 1000)
 
     return () => clearInterval(interval)
-  }, [timerActive, timerCompleted, timerSeconds, settings.timerMinutes, setTimerSeconds, setTimerActive, setTimerCompleted, speak])
+  }, [timerActive, timerCompleted, settings.timerMinutes, setTimerSeconds, setTimerActive, setTimerCompleted, speak])
 
   const toggleVoice = () => {
     updateSettings({ voiceEnabled: !settings.voiceEnabled })
