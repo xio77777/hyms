@@ -7,6 +7,7 @@ import CountdownOverlay from '@/components/CountdownOverlay'
 
 export default function EyeMovementTraining() {
   const setIsPaused = useTrainingStore((s) => s.setIsPaused)
+  const speak = useTrainingStore((s) => s.speak)
   const [showControls, setShowControls] = useState(true)
   const [showCountdown, setShowCountdown] = useState(true)
 
@@ -35,7 +36,11 @@ export default function EyeMovementTraining() {
 
   const handleCanvasClick = () => {
     if (!showCountdown) {
-      setShowControls((prev) => !prev)
+      setShowControls((prev) => {
+        const next = !prev
+        speak(next ? '控制面板已显示' : '进入专注模式')
+        return next
+      })
     }
   }
 

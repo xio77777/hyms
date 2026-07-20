@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Pause, Play, Volume2, VolumeX, Clock, RotateCcw, Sun, Zap, Timer, ChevronUp, ChevronDown } from 'lucide-react'
+import { ArrowLeft, Pause, Play, Volume2, VolumeX, Clock, RotateCcw, Sun, Zap, Timer, ChevronUp, ChevronDown, Disc } from 'lucide-react'
 import { useTrainingStore, type TrainingMode } from '@/store/trainingStore'
 import { useNavigate } from 'react-router-dom'
 import CastButton from '@/components/CastButton'
@@ -15,6 +15,7 @@ interface ModeOption {
 
 const MODES: ModeOption[] = [
   { key: 'tracking', label: '追踪', icon: <Zap className="w-6 h-6" />, color: 'border-neon-cyan text-neon-cyan' },
+  { key: 'carousel', label: '轮播', icon: <Disc className="w-6 h-6" />, color: 'border-neon-magenta text-neon-magenta' },
   { key: 'calm', label: '舒缓', icon: <Sun className="w-6 h-6" />, color: 'border-calm-lavender text-calm-lavender' },
   { key: 'excite', label: '兴奋', icon: <Zap className="w-6 h-6" />, color: 'border-neon-gold text-neon-gold' },
 ]
@@ -127,6 +128,14 @@ export default function ControlBar() {
     speak(`亮度${label}`)
   }
 
+  const continueTraining = () => {
+    setTimerActive(false)
+    setTimerCompleted(false)
+    resetTimer()
+    setIsPaused(false)
+    speak('继续训练')
+  }
+
   const stopTimer = () => {
     setTimerActive(false)
     setTimerCompleted(false)
@@ -198,7 +207,7 @@ export default function ControlBar() {
             </div>
             <div className="flex gap-4">
               <button
-                onClick={stopTimer}
+                onClick={continueTraining}
                 className="px-8 py-4 bg-neon-cyan/30 hover:bg-neon-cyan/40 rounded-2xl text-neon-cyan text-xl font-bold transition-colors"
               >
                 继续训练

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { ArrowLeft, RotateCcw, Trophy } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useTrainingStore } from '@/store/trainingStore'
@@ -14,20 +14,19 @@ interface MemoryCard {
 
 const EMOJIS = ['🍎', '🌟', '🎵', '🌈', '🌻', '🐱', '🎈', '❤️']
 
-/**
- * 生成随机数字序列
- */
 function generateNumbers(count: number): number[] {
   const nums: number[] = []
-  for (let i = 0; i < count; i++) {
-    nums.push(Math.floor(Math.random() * 50) + 1)
+  const used = new Set<number>()
+  while (nums.length < count) {
+    const n = Math.floor(Math.random() * 50) + 1
+    if (!used.has(n)) {
+      used.add(n)
+      nums.push(n)
+    }
   }
   return nums
 }
 
-/**
- * 生成记忆翻牌卡片
- */
 function generateMemoryCards(): MemoryCard[] {
   const selectedEmojis = EMOJIS.slice(0, 6)
   const pairs = [...selectedEmojis, ...selectedEmojis]
@@ -43,10 +42,6 @@ function generateMemoryCards(): MemoryCard[] {
   }))
 }
 
-/**
- * 数字排序游戏组件
- * 将乱序数字按从小到大依次点击，锻炼注意力和数字认知
- */
 function SortGame() {
   const [numbers, setNumbers] = useState<number[]>(() => generateNumbers(8))
   const [nextTarget, setNextTarget] = useState(1)
@@ -77,7 +72,7 @@ function SortGame() {
         setClicked(newClicked)
         if (nextTarget >= numbers.length) {
           setIsComplete(true)
-          speak(`完成！用时 ${elapsed} 秒`)
+          speak(`完成！用时 ${Math.floor((Date.now() - startTime) / 1000)} 秒`)
         } else {
           setNextTarget(nextTarget + 1)
         }
@@ -85,7 +80,7 @@ function SortGame() {
         speak('请按顺序点击')
       }
     },
-    [clicked, isComplete, nextTarget, numbers.length, sortedNumbers, elapsed, speak]
+    [clicked, isComplete, nextTarget, numbers.length, sortedNumbers, speak, startTime]
   )
 
   const handleReset = () => {
@@ -98,29 +93,29 @@ function SortGame() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-wrap items-center justify-center gap-4 text-white/70">
-        <span className="text-xl">
-          请按从小到大的顺序点击数字
+    <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
+      <div className="flex flex-wrap items-center justify-center gap-4 text-white/80">
+        <span className="text-xl sm:text-2xl font-medium">
+          按从小到大顺序点击数字
         </span>
-        <span className="text-neon-cyan font-mono text-xl">
+        <span className="text-neon-cyan font-mono text-2xl font-bold">
           {nextTarget}/{numbers.length}
         </span>
-        <span className="text-white/50 font-mono text-lg">
+        <span className="text-white/50 font-mono text-xl">
           {elapsed}秒
         </span>
       </div>
 
       {isComplete && (
-        <div className="bg-neon-cyan/10 border-2 border-neon-cyan/40 rounded-2xl px-8 py-4 flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-neon-gold" />
-          <span className="text-neon-cyan text-2xl font-bold">
+        <div className="bg-neon-cyan/10 border-2 border-neon-cyan/40 rounded-2xl px-8 py-5 flex items-center gap-3">
+          <Trophy className="w-10 h-10 text-neon-gold" />
+          <span className="text-neon-cyan text-2xl sm:text-3xl font-bold">
             完成！用时 {elapsed} 秒
           </span>
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-4 gap-3 sm:gap-4">
         {numbers.map((num, index) => {
           const isClicked = clicked.has(num)
           const isNext = !isClicked && num === sortedNumbers[nextTarget - 1]
@@ -135,8 +130,8 @@ function SortGame() {
                 ${isClicked
                   ? 'bg-neon-cyan/20 border-2 border-neon-cyan/40 text-neon-cyan scale-95'
                   : isNext
-                    ? 'bg-white/10 border-2 border-white/30 text-white hover:bg-white/15 hover:scale-105 hover:shadow-[0_0_20px_rgba(0,229,255,0.3)]'
-                    : 'bg-white/5 border-2 border-white/10 text-white/50 hover:bg-white/10 hover:scale-105'
+                    ? 'bg-white/15 border-2 border-white/40 text-white hover:bg-white/20 hover:scale-105 shadow-[0_0_20px_rgba(0,229,255,0.3)]'
+                    : 'bg-white/5 border-2 border-white/10 text-white/60 hover:bg-white/10 hover:scale-105 hover:text-white'
                 }
               `}
             >
@@ -148,20 +143,16 @@ function SortGame() {
 
       <button
         onClick={handleReset}
-        className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white/5 border-2 border-white/10
-          text-white/70 hover:text-white hover:bg-white/10 transition-all text-lg"
+        className="flex items-center gap-3 px-10 py-5 rounded-2xl bg-white/5 border-2 border-white/10
+          text-white/70 hover:text-white hover:bg-white/10 transition-all text-xl font-medium"
       >
-        <RotateCcw className="w-6 h-6" />
+        <RotateCcw className="w-7 h-7" />
         <span>重新开始</span>
       </button>
     </div>
   )
 }
 
-/**
- * 记忆翻牌游戏组件
- * 翻开两张相同图案的卡片配对，锻炼记忆力和注意力
- */
 function MemoryGame() {
   const [cards, setCards] = useState<MemoryCard[]>(() => generateMemoryCards())
   const [flippedIds, setFlippedIds] = useState<number[]>([])
@@ -243,32 +234,32 @@ function MemoryGame() {
   }
 
   return (
-    <div className="flex flex-col items-center gap-8">
-      <div className="flex flex-wrap items-center justify-center gap-4 text-white/70">
-        <span className="text-xl">
-          翻开两张相同图案的卡片进行配对
+    <div className="flex flex-col items-center gap-6 w-full max-w-2xl">
+      <div className="flex flex-wrap items-center justify-center gap-4 text-white/80">
+        <span className="text-xl sm:text-2xl font-medium">
+          翻开两张相同图案的卡片配对
         </span>
-        <span className="text-neon-magenta font-mono text-xl">
+        <span className="text-neon-magenta font-mono text-2xl font-bold">
           {moves} 步
         </span>
       </div>
 
       {isComplete && (
-        <div className="bg-neon-magenta/10 border-2 border-neon-magenta/40 rounded-2xl px-8 py-4 flex items-center gap-3">
-          <Trophy className="w-8 h-8 text-neon-gold" />
-          <span className="text-neon-magenta text-2xl font-bold">
+        <div className="bg-neon-magenta/10 border-2 border-neon-magenta/40 rounded-2xl px-8 py-5 flex items-center gap-3">
+          <Trophy className="w-10 h-10 text-neon-gold" />
+          <span className="text-neon-magenta text-2xl sm:text-3xl font-bold">
             全部配对成功！共 {moves} 步
           </span>
         </div>
       )}
 
-      <div className="grid grid-cols-4 gap-4 sm:gap-6">
+      <div className="grid grid-cols-4 gap-3 sm:gap-4">
         {cards.map((card) => (
           <button
             key={card.id}
             onClick={() => handleCardClick(card.id)}
             className={`
-              w-16 h-16 sm:w-20 sm:h-20 rounded-xl text-2xl sm:text-3xl transition-all duration-300
+              w-20 h-20 sm:w-24 sm:h-24 rounded-2xl text-3xl sm:text-4xl transition-all duration-300
               flex items-center justify-center
               ${card.isMatched
                 ? 'bg-neon-magenta/15 border-2 border-neon-magenta/30 scale-95'
@@ -281,7 +272,7 @@ function MemoryGame() {
             {card.isFlipped || card.isMatched ? (
               <span>{card.emoji}</span>
             ) : (
-              <span className="text-white/20 text-xl">?</span>
+              <span className="text-white/20 text-3xl">?</span>
             )}
           </button>
         ))}
@@ -289,23 +280,59 @@ function MemoryGame() {
 
       <button
         onClick={handleReset}
-        className="flex items-center gap-2 px-8 py-4 rounded-xl bg-white/5 border-2 border-white/10
-          text-white/70 hover:text-white hover:bg-white/10 transition-all text-lg"
+        className="flex items-center gap-3 px-10 py-5 rounded-2xl bg-white/5 border-2 border-white/10
+          text-white/70 hover:text-white hover:bg-white/10 transition-all text-xl font-medium"
       >
-        <RotateCcw className="w-6 h-6" />
+        <RotateCcw className="w-7 h-7" />
         <span>重新开始</span>
       </button>
     </div>
   )
 }
 
-/**
- * 认知记忆训练页
- * 包含数字排序和记忆翻牌两种互动小游戏
- */
+function CountdownOverlay({ name, onComplete }: { name: string; onComplete: () => void }) {
+  const [count, setCount] = useState(3)
+  const doneRef = useRef(false)
+  const speak = useTrainingStore((s) => s.speak)
+
+  useEffect(() => {
+    speak(`${name}准备，3`)
+    const timer = setInterval(() => {
+      setCount((prev) => {
+        const next = prev - 1
+        if (next > 0) speak(next.toString())
+        return next
+      })
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [name, speak])
+
+  useEffect(() => {
+    if (count <= 0 && !doneRef.current) {
+      doneRef.current = true
+      speak('开始')
+      const t = setTimeout(onComplete, 400)
+      return () => clearTimeout(t)
+    }
+  }, [count, onComplete, speak])
+
+  if (count < 0) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/85 backdrop-blur-sm">
+      <div className="text-white/60 text-2xl mb-4">{name}</div>
+      <div className="text-white text-[180px] font-black leading-none animate-pulse">
+        {count > 0 ? count : '开始'}
+      </div>
+      <div className="text-white/40 text-lg mt-4">请做好准备</div>
+    </div>
+  )
+}
+
 export default function CognitiveTraining() {
   const navigate = useNavigate()
   const [gameMode, setGameMode] = useState<GameMode>('sort')
+  const [showCountdown, setShowCountdown] = useState(true)
   const { speak } = useTrainingStore()
 
   const handleBack = () => {
@@ -315,26 +342,34 @@ export default function CognitiveTraining() {
 
   const handleModeChange = (mode: GameMode) => {
     setGameMode(mode)
+    setShowCountdown(true)
     speak(mode === 'sort' ? '数字排序游戏' : '记忆翻牌游戏')
   }
 
   return (
-    <div className="h-full w-full bg-dark flex flex-col">
-      <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-white/10">
+    <div className="h-full w-full bg-dark flex flex-col overflow-hidden">
+      {showCountdown && (
+        <CountdownOverlay
+          name={gameMode === 'sort' ? '数字排序' : '记忆翻牌'}
+          onComplete={() => setShowCountdown(false)}
+        />
+      )}
+
+      <div className="flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 border-b border-white/10 shrink-0">
         <button
           onClick={handleBack}
-          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-4 py-2 rounded-xl bg-black/40 backdrop-blur-sm border border-white/10 hover:bg-black/50"
+          className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl bg-white/5 hover:bg-white/10 text-lg"
         >
           <ArrowLeft className="w-6 h-6" />
-          <span className="text-base">返回</span>
+          <span>返回</span>
         </button>
 
-        <h1 className="text-white/80 text-xl font-semibold">认知记忆训练</h1>
+        <h1 className="text-white/80 text-lg sm:text-xl font-semibold">认知记忆训练</h1>
 
         <div className="flex gap-2">
           <button
-            onClick={() => handleModeChange('sort')}
-            className={`px-5 py-3 rounded-xl text-base font-medium transition-all
+            onClick={() => gameMode !== 'sort' && handleModeChange('sort')}
+            className={`px-5 py-3 rounded-2xl text-base sm:text-lg font-medium transition-all
               ${gameMode === 'sort'
                 ? 'text-neon-cyan bg-neon-cyan/10 border-2 border-neon-cyan/40'
                 : 'text-white/50 hover:text-white/80 border-2 border-transparent hover:bg-white/5'
@@ -343,8 +378,8 @@ export default function CognitiveTraining() {
             数字排序
           </button>
           <button
-            onClick={() => handleModeChange('memory')}
-            className={`px-5 py-3 rounded-xl text-base font-medium transition-all
+            onClick={() => gameMode !== 'memory' && handleModeChange('memory')}
+            className={`px-5 py-3 rounded-2xl text-base sm:text-lg font-medium transition-all
               ${gameMode === 'memory'
                 ? 'text-neon-magenta bg-neon-magenta/10 border-2 border-neon-magenta/40'
                 : 'text-white/50 hover:text-white/80 border-2 border-transparent hover:bg-white/5'
@@ -355,8 +390,8 @@ export default function CognitiveTraining() {
         </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center p-4 sm:p-8">
-        {gameMode === 'sort' ? <SortGame /> : <MemoryGame />}
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        {!showCountdown && (gameMode === 'sort' ? <SortGame /> : <MemoryGame />)}
       </div>
     </div>
   )

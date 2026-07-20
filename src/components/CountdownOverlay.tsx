@@ -21,8 +21,6 @@ export default function CountdownOverlay({ trainingName, onComplete }: Countdown
         const next = prev - 1
         if (next > 0) {
           speak(next.toString())
-        } else if (next === 0) {
-          speak('开始')
         }
         return next
       })
@@ -32,12 +30,16 @@ export default function CountdownOverlay({ trainingName, onComplete }: Countdown
   }, [trainingName, setIsPaused, speak])
 
   useEffect(() => {
-    if (count < 0 && !completedRef.current) {
+    if (count <= 0 && !completedRef.current) {
+      if (count === 0) {
+        speak('开始')
+      }
       completedRef.current = true
       setIsPaused(false)
-      onComplete()
+      const t = setTimeout(() => onComplete(), 600)
+      return () => clearTimeout(t)
     }
-  }, [count, setIsPaused, onComplete])
+  }, [count, setIsPaused, onComplete, speak])
 
   if (count < 0) return null
 
