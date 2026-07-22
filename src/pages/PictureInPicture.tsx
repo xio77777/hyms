@@ -9,7 +9,7 @@ export default function PictureInPicture() {
     mode, speed, brightness, isPaused,
     timerSeconds, timerActive, timerCompleted,
     settings, speak,
-    setMode, setSpeed, setBrightness, togglePause,
+    setSpeed, setBrightness, togglePause,
     resetTimer
   } = useTrainingStore()
   
@@ -27,6 +27,7 @@ export default function PictureInPicture() {
       if (document.pictureInPictureElement) {
         await document.exitPictureInPicture()
         setIsPipActive(false)
+        speak('已退出画中画')
       } else if (document.pictureInPictureEnabled) {
         const video = document.createElement('video')
         video.srcObject = (navigator as any).mediaDevices?.getDisplayMedia?.({
@@ -37,6 +38,7 @@ export default function PictureInPicture() {
         await video.play()
         await video.requestPictureInPicture()
         setIsPipActive(true)
+        speak('画中画已开启')
         
         video.addEventListener('leavepictureinpicture', () => {
           setIsPipActive(false)
@@ -53,9 +55,11 @@ export default function PictureInPicture() {
       if (!document.fullscreenElement) {
         await document.documentElement.requestFullscreen()
         setIsFullscreen(true)
+        speak('已进入全屏')
       } else {
         await document.exitFullscreen()
         setIsFullscreen(false)
+        speak('已退出全屏')
       }
     } catch (err) {
       console.error('Fullscreen error:', err)
@@ -75,68 +79,88 @@ export default function PictureInPicture() {
     excite: '兴奋模式'
   }
 
+  const speedPresets = [
+    { value: 0.5, label: '慢' },
+    { value: 1.0, label: '中' },
+    { value: 2.0, label: '快' },
+  ]
+
+  const brightnessPresets = [
+    { value: 0.5, label: '暗' },
+    { value: 0.8, label: '中' },
+    { value: 1.0, label: '亮' },
+  ]
+
   return (
     <div className="h-screen w-screen bg-dark relative flex flex-col">
       <div className="flex-1 flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
-        <div className="text-center text-white/30">
-          <div className="text-6xl mb-4">📺</div>
-          <div className="text-xl font-medium mb-2">画中画模式</div>
-          <div className="text-sm text-white/50">
-            正在电视上显示训练内容
+        <div className="text-center text-white/30 px-4">
+          <div className="text-7xl mb-6">📺</div>
+          <div className="text-2xl font-medium mb-3">画中画模式</div>
+          <div className="text-lg text-white/50 leading-relaxed">
+            正在电视上显示{modeLabels[mode] || '训练'}内容
           </div>
-          <div className="text-xs text-white/30 mt-4">
+          <div className="text-base text-white/30 mt-4">
             {isPipActive ? '画中画已激活' : '点击下方按钮启用画中画'}
           </div>
         </div>
       </div>
 
-      <div className="bg-black/90 backdrop-blur-xl border-t border-white/10 p-4">
-        <div className="max-w-md mx-auto space-y-4">
+      <div className="bg-black/90 backdrop-blur-xl border-t-2 border-white/10 p-5">
+        <div className="max-w-md mx-auto space-y-5">
           <div className="flex items-center justify-between">
             <button
-              onClick={() => navigate('/')}
-              className="flex items-center gap-2 text-white/60 hover:text-white transition-colors"
+              onClick={() => {
+                speak('返回首页')
+                navigate('/')
+              }}
+              className="flex items-center gap-3 px-5 py-3 rounded-2xl text-white/70 hover:text-white hover:bg-white/10 transition-colors text-lg"
             >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="text-sm">返回</span>
+              <ArrowLeft className="w-6 h-6" />
+              <span>返回</span>
             </button>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={toggleFullscreen}
-                className="text-white/60 hover:text-white transition-colors p-2 rounded-lg hover:bg-white/10"
+                className="w-12 h-12 flex items-center justify-center rounded-2xl text-white/70 hover:text-white hover:bg-white/10 transition-colors"
                 title={isFullscreen ? '退出全屏' : '全屏'}
               >
                 {isFullscreen ? (
-                  <Minimize2 className="w-5 h-5" />
+                  <Minimize2 className="w-6 h-6" />
                 ) : (
-                  <Maximize2 className="w-5 h-5" />
+                  <Maximize2 className="w-6 h-6" />
                 )}
               </button>
 
               <button
                 onClick={enterPictureInPicture}
-                className="flex items-center gap-2 px-4 py-2 bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan rounded-lg transition-colors text-sm font-medium"
+                className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-colors text-lg font-medium ${
+                  isPipActive
+                    ? 'bg-neon-cyan/30 text-neon-cyan border-2 border-neon-cyan/40'
+                    : 'bg-neon-cyan/20 hover:bg-neon-cyan/30 text-neon-cyan border-2 border-transparent'
+                }`}
               >
-                <Maximize2 className="w-4 h-4" />
-                <span>{isPipActive ? '退出画中画' : '启用画中画'}</span>
+                <Maximize2 className="w-6 h-6" />
+                <span className="hidden sm:inline">{isPipActive ? '退出画中画' : '画中画'}</span>
+                <span className="sm:hidden">{isPipActive ? '退出' : '画中画'}</span>
               </button>
             </div>
           </div>
 
           {timerActive && (
-            <div className="flex items-center gap-3 bg-white/5 rounded-lg px-4 py-2">
-              <div className="flex items-center gap-2">
-                <div className="text-neon-cyan text-sm font-mono">
+            <div className="flex items-center gap-4 bg-white/5 rounded-2xl px-5 py-4 border-2 border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="text-neon-cyan text-xl font-mono font-bold">
                   {formatTime(timerSeconds)}
                 </div>
-                <div className="text-white/40 text-xs">
+                <div className="text-white/40 text-base">
                   / {formatTime(settings.timerMinutes * 60)}
                 </div>
               </div>
-              <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className="flex-1 h-3 bg-white/10 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-neon-cyan"
+                  className="h-full bg-neon-cyan rounded-full transition-all"
                   style={{
                     width: `${Math.min((timerSeconds / (settings.timerMinutes * 60)) * 100, 100)}%`
                   }}
@@ -146,67 +170,81 @@ export default function PictureInPicture() {
           )}
 
           {timerCompleted && (
-            <div className="flex items-center justify-center gap-2 bg-neon-cyan/10 text-neon-cyan rounded-lg px-4 py-2">
-              <span className="text-sm font-medium">🎉 训练完成</span>
+            <div className="flex items-center justify-between gap-4 bg-neon-cyan/10 text-neon-cyan rounded-2xl px-5 py-4 border-2 border-neon-cyan/20">
+              <span className="text-lg font-medium">🎉 训练完成</span>
               <button
-                onClick={resetTimer}
-                className="text-xs bg-neon-cyan/20 px-2 py-1 rounded hover:bg-neon-cyan/30"
+                onClick={() => {
+                  resetTimer()
+                  speak('已确认')
+                }}
+                className="px-5 py-2 bg-neon-cyan/20 hover:bg-neon-cyan/30 rounded-xl text-base font-medium transition-colors"
               >
                 确定
               </button>
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-white/50 text-xs mb-1.5">速度</div>
+          <div className="grid grid-cols-1 gap-4">
+            <div className="bg-white/5 rounded-2xl p-4 border-2 border-white/10">
+              <div className="text-white/70 text-base mb-3">速度</div>
               <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="0.2"
-                  max="5"
-                  step="0.1"
-                  value={speed}
-                  onChange={(e) => setSpeed(parseFloat(e.target.value))}
-                  className="flex-1 h-1 bg-white/20 rounded-full appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-cyan"
-                />
-                <span className="text-white/70 text-xs w-8">{speed.toFixed(1)}x</span>
+                {speedPresets.map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => {
+                      setSpeed(p.value)
+                      speak(`速度${p.label}`)
+                    }}
+                    className={`flex-1 py-3 rounded-xl text-lg font-medium transition-colors ${
+                      Math.abs(speed - p.value) < 0.15
+                        ? 'bg-neon-cyan/30 text-neon-cyan border-2 border-neon-cyan/40'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
             </div>
 
-            <div>
-              <div className="text-white/50 text-xs mb-1.5">亮度</div>
+            <div className="bg-white/5 rounded-2xl p-4 border-2 border-white/10">
+              <div className="text-white/70 text-base mb-3">亮度</div>
               <div className="flex items-center gap-2">
-                <input
-                  type="range"
-                  min="0.3"
-                  max="1"
-                  step="0.05"
-                  value={brightness}
-                  onChange={(e) => setBrightness(parseFloat(e.target.value))}
-                  className="flex-1 h-1 bg-white/20 rounded-full appearance-none cursor-pointer
-                    [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3
-                    [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-neon-gold"
-                />
-                <span className="text-white/70 text-xs w-8">{Math.round(brightness * 100)}%</span>
+                {brightnessPresets.map((p) => (
+                  <button
+                    key={p.value}
+                    onClick={() => {
+                      setBrightness(p.value)
+                      speak(`亮度${p.label}`)
+                    }}
+                    className={`flex-1 py-3 rounded-xl text-lg font-medium transition-colors ${
+                      Math.abs(brightness - p.value) < 0.15
+                        ? 'bg-neon-gold/30 text-neon-gold border-2 border-neon-gold/40'
+                        : 'bg-white/10 text-white/70 hover:bg-white/20 border-2 border-transparent'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
 
           <button
-            onClick={togglePause}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-white/10 hover:bg-white/15 text-white rounded-xl transition-colors font-medium"
+            onClick={() => {
+              togglePause()
+              speak(isPaused ? '继续训练' : '暂停训练')
+            }}
+            className="w-full flex items-center justify-center gap-3 py-4 bg-white/10 hover:bg-white/15 text-white rounded-2xl transition-colors font-medium text-lg"
           >
             {isPaused ? (
               <>
-                <Play className="w-5 h-5" />
+                <Play className="w-6 h-6" />
                 <span>继续训练</span>
               </>
             ) : (
               <>
-                <Pause className="w-5 h-5" />
+                <Pause className="w-6 h-6" />
                 <span>暂停训练</span>
               </>
             )}

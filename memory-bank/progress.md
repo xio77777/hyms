@@ -105,6 +105,15 @@
 - [x] 统一所有页面导航栏按钮规格（w-6 h-6图标 px-5 py-3 rounded-2xl text-lg）
 - [x] 修复npm install导致TypeScript升级到6.0的问题，构建验证通过
 
+### 无障碍优化第六轮（2026-07-22）
+- [x] ShareButton/ShareModal遗漏组件全面无障碍化（w-12 h-12按钮、语音反馈、border-2）
+- [x] Home工具区按钮增大到border-2 p-5 min-h-[140px] w-12 h-12图标+描述文字+语音
+- [x] Home无障碍菜单py-4 px-4 w-6 h-6 text-lg border-2，整体触控区64px+
+- [x] PictureInPicture页面全面改造：所有按钮≥48px、进度条h-3
+- [x] 彻底消除滑块range input：PictureInPicture速度/亮度改为三档预设大按钮（慢/中/快、暗/中/亮）
+- [x] PictureInPicture全操作语音反馈（返回/全屏/画中画/暂停/速度/亮度/确认）
+- [x] PictureInPicture中央信息区字号整体增大
+
 ## 当前状态
 项目已完成所有核心训练功能，支持多种投屏方式，并添加了实用的截图、音效、训练计划等功能。
 

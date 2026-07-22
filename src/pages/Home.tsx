@@ -86,28 +86,28 @@ const TOOLS = [
   {
     title: '训练计划',
     description: '预设训练组合',
-    icon: <ListChecks className="w-10 h-10" />,
+    icon: <ListChecks className="w-12 h-12" />,
     color: 'border-white/20 text-white/60',
     path: '/plan',
   },
   {
     title: '训练统计',
     description: '查看康复进展',
-    icon: <BarChart3 className="w-10 h-10" />,
+    icon: <BarChart3 className="w-12 h-12" />,
     color: 'border-white/20 text-white/60',
     path: '/stats',
   },
   {
     title: '训练历史',
     description: '查看记录',
-    icon: <History className="w-10 h-10" />,
+    icon: <History className="w-12 h-12" />,
     color: 'border-white/20 text-white/60',
     path: '/history',
   },
   {
     title: '训练提醒',
     description: '定时提醒',
-    icon: <Bell className="w-10 h-10" />,
+    icon: <Bell className="w-12 h-12" />,
     color: 'border-white/20 text-white/60',
     path: '/reminders',
   },
@@ -217,29 +217,29 @@ export default function Home() {
               </button>
 
               {showAccessibilityMenu && (
-                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border border-white/20 rounded-2xl p-4 min-w-[240px] shadow-2xl z-50">
-                  <h3 className="text-white font-medium mb-4">无障碍设置</h3>
+                <div className="absolute top-full right-0 mt-2 bg-black/90 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 min-w-[280px] shadow-2xl z-50">
+                  <h3 className="text-white text-lg font-medium mb-4">无障碍设置</h3>
                   <div className="space-y-3">
                     <button
                       onClick={toggleHighContrast}
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                      className={`flex items-center gap-4 w-full py-4 px-4 rounded-xl transition-all text-lg ${
                         settings.highContrast
-                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 border-2 border-transparent'
                       }`}
                     >
-                      <Sun className="w-5 h-5" />
+                      <Sun className="w-6 h-6 flex-shrink-0" />
                       <span>{settings.highContrast ? '关闭' : '开启'}高对比度</span>
                     </button>
                     <button
                       onClick={toggleLargeFont}
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                      className={`flex items-center gap-4 w-full py-4 px-4 rounded-xl transition-all text-lg ${
                         settings.largeFont
-                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 border-2 border-transparent'
                       }`}
                     >
-                      <Type className="w-5 h-5" />
+                      <Type className="w-6 h-6 flex-shrink-0" />
                       <span>{settings.largeFont ? '关闭' : '开启'}大字体</span>
                     </button>
                     <button
@@ -247,13 +247,13 @@ export default function Home() {
                         updateSettings({ voiceEnabled: !settings.voiceEnabled })
                         speak(settings.voiceEnabled ? '语音播报已关闭' : '语音播报已开启')
                       }}
-                      className={`flex items-center gap-3 w-full p-3 rounded-xl transition-all ${
+                      className={`flex items-center gap-4 w-full py-4 px-4 rounded-xl transition-all text-lg ${
                         settings.voiceEnabled
-                          ? 'bg-neon-cyan/20 text-neon-cyan border border-neon-cyan/40'
-                          : 'bg-white/5 text-white/70 hover:bg-white/10'
+                          ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40'
+                          : 'bg-white/5 text-white/70 hover:bg-white/10 border-2 border-transparent'
                       }`}
                     >
-                      <Tv className="w-5 h-5" />
+                      <Tv className="w-6 h-6 flex-shrink-0" />
                       <span>{settings.voiceEnabled ? '关闭' : '开启'}语音播报</span>
                     </button>
                   </div>
@@ -323,24 +323,28 @@ export default function Home() {
           <h2 className="text-white/50 text-sm font-medium uppercase tracking-widest mb-4">
             工具
           </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
             {TOOLS.map((mod) => (
               <button
                 key={mod.path}
-                onClick={() => navigate(mod.path)}
+                onClick={() => {
+                  speak(mod.title)
+                  navigate(mod.path)
+                }}
                 className={`
                   rounded-2xl bg-white/5 backdrop-blur-md
-                  border border-white/10
-                  p-4 flex flex-col items-center gap-2
+                  border-2 border-white/10
+                  p-5 flex flex-col items-center gap-3
                   transition-all duration-300
                   hover:bg-white/10 hover:scale-[1.03]
                   active:scale-[0.97]
-                  min-h-[120px]
+                  min-h-[140px]
                   justify-center
                 `}
               >
                 <span className={mod.color}>{mod.icon}</span>
-                <span className="text-white/80 text-sm font-medium">{mod.title}</span>
+                <span className="text-white/80 text-base font-medium">{mod.title}</span>
+                <span className="text-white/50 text-xs">{mod.description}</span>
               </button>
             ))}
           </div>
