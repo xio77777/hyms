@@ -89,6 +89,22 @@
 - [x] 游戏切换模式时重新倒计时，给患者准备时间
 - [x] TypeScript版本锁定为~5.8.3防止意外升级
 
+### 无障碍优化第五轮（2026-07-22）
+- [x] 所有非Canvas页面按钮统一增大到48-96px触控区（TrainingPlan/Stats/History/ReminderSettings）
+- [x] 删除/清空按钮改为始终可见，移除所有hover-only交互
+- [x] 所有删除操作添加confirm二次确认，防止误触
+- [x] 模态框关闭按钮统一为w-12 h-12 X图标（不再用"×"文字）
+- [x] 输入框统一增大：border-2 px-5 py-4 text-lg
+- [x] ThemeSwitcher组件增大到w-12 h-12，下拉菜单项增大
+- [x] CastButton投屏按钮全面无障碍化：增大按钮、添加语音反馈、弹窗优化
+- [x] 修复TrainingStats速度显示硬编码问题，动态读取store.speed
+- [x] TrainingStats新增高对比度/大字体设置状态显示
+- [x] TrainingHistory Tab切换添加语音反馈，删除记录有语音确认
+- [x] ReminderSettings开关/删除/添加操作全覆盖语音反馈
+- [x] TrainingPlan移除无效的跨页面本地状态（isRunning/stepTimeLeft），开始前重置速度亮度
+- [x] 统一所有页面导航栏按钮规格（w-6 h-6图标 px-5 py-3 rounded-2xl text-lg）
+- [x] 修复npm install导致TypeScript升级到6.0的问题，构建验证通过
+
 ## 当前状态
 项目已完成所有核心训练功能，支持多种投屏方式，并添加了实用的截图、音效、训练计划等功能。
 
