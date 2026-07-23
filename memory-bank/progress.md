@@ -114,6 +114,22 @@
 - [x] PictureInPicture全操作语音反馈（返回/全屏/画中画/暂停/速度/亮度/确认）
 - [x] PictureInPicture中央信息区字号整体增大
 
+### 无障碍优化第七轮（2026-07-23）
+- [x] ControlBar速度/亮度预设按钮py-2→py-3，触控区达到48px+
+- [x] 速度/亮度档位全局统一：速度0.5/1.0/2.0x，亮度50%/80%/100%
+- [x] 速度/亮度选中判定宽容度增大（±0.15/±0.1），边界值不再不高亮
+- [x] 所有ControlBar按钮text-base→text-lg统一
+- [x] 计时条border-2、时间text-2xl font-bold、Timer图标w-6 h-6、进度条rounded-full
+- [x] 停止计时按钮w-12 h-12+confirm二次确认
+- [x] 语音开关bug修复：关闭前先speak"语音播报已关闭"延迟500ms再关闭
+- [x] 计时按钮运行中显示剩余分钟数，计时菜单添加click-outside遮罩+border-2+大按钮
+- [x] 训练完成面板按钮加border-2、flex-wrap适配小屏
+- [x] 修复计时条在训练完成时被隐藏的bug（timerActive && !timerCompleted）
+- [x] GestureGuide关闭按钮w-10 h-10、文字text-base/lg、border-2
+- [x] KeyboardShortcuts位置上移避免遮挡、中文"空格"、文字/按钮增大
+- [x] TypeScript版本修复锁定到5.8.3
+- [x] 构建验证通过
+
 ## 当前状态
 项目已完成所有核心训练功能，支持多种投屏方式，并添加了实用的截图、音效、训练计划等功能。
 

@@ -23,12 +23,12 @@ const MODES: ModeOption[] = [
 const SPEED_PRESETS = [
   { label: '慢', value: 0.5 },
   { label: '中', value: 1 },
-  { label: '快', value: 1.5 },
+  { label: '快', value: 2 },
 ]
 
 const BRIGHTNESS_PRESETS = [
-  { label: '暗', value: 0.4 },
-  { label: '中', value: 0.7 },
+  { label: '暗', value: 0.5 },
+  { label: '中', value: 0.8 },
   { label: '亮', value: 1 },
 ]
 
@@ -103,9 +103,12 @@ export default function ControlBar() {
   }, [timerActive, timerCompleted, settings.timerMinutes, setTimerSeconds, setTimerActive, setTimerCompleted, speak])
 
   const toggleVoice = () => {
-    updateSettings({ voiceEnabled: !settings.voiceEnabled })
-    if (!settings.voiceEnabled) {
-      speak('语音播报已开启')
+    if (settings.voiceEnabled) {
+      speak('语音播报已关闭')
+      setTimeout(() => updateSettings({ voiceEnabled: false }), 500)
+    } else {
+      updateSettings({ voiceEnabled: true })
+      setTimeout(() => speak('语音播报已开启'), 100)
     }
   }
 
@@ -137,10 +140,12 @@ export default function ControlBar() {
   }
 
   const stopTimer = () => {
-    setTimerActive(false)
-    setTimerCompleted(false)
-    resetTimer()
-    speak('计时器已停止')
+    if (window.confirm('确定停止计时吗？')) {
+      setTimerActive(false)
+      setTimerCompleted(false)
+      resetTimer()
+      speak('计时器已停止')
+    }
   }
 
   const formatTime = (seconds: number) => {
@@ -172,24 +177,24 @@ export default function ControlBar() {
 
   return (
     <div className="absolute bottom-0 left-0 right-0 z-20">
-      {timerActive && (
-        <div className="bg-black/60 backdrop-blur-sm border-b border-white/10 px-4 py-3">
+      {timerActive && !timerCompleted && (
+        <div className="bg-black/60 backdrop-blur-sm border-b-2 border-white/10 px-4 py-3">
           <div className="flex items-center gap-4 max-w-5xl mx-auto">
             <div className="flex items-center gap-3">
-              <Timer className="w-5 h-5 text-neon-cyan" />
-              <span className="text-white font-mono text-xl min-w-[120px]">
+              <Timer className="w-6 h-6 text-neon-cyan" />
+              <span className="text-white font-mono text-2xl font-bold min-w-[140px]">
                 {formatTime(timerSeconds)}
               </span>
             </div>
             <div className="flex-1 h-3 bg-white/20 rounded-full overflow-hidden">
               <div
-                className="h-full bg-gradient-to-r from-neon-cyan to-neon-magenta transition-all duration-1000"
+                className="h-full bg-gradient-to-r from-neon-cyan to-neon-magenta transition-all duration-1000 rounded-full"
                 style={{ width: `${getElapsedPercent()}%` }}
               />
             </div>
             <button
               onClick={stopTimer}
-              className="p-3 text-white/60 hover:text-white transition-colors bg-white/10 rounded-xl hover:bg-white/20"
+              className="w-12 h-12 flex items-center justify-center text-white/70 hover:text-white transition-colors bg-white/10 rounded-2xl hover:bg-white/20"
               title="停止计时"
             >
               <RotateCcw className="w-6 h-6" />
@@ -199,22 +204,22 @@ export default function ControlBar() {
       )}
 
       {timerCompleted && (
-        <div className="bg-neon-cyan/20 backdrop-blur-sm border-b border-neon-cyan/40 px-4 py-6">
+        <div className="bg-neon-cyan/20 backdrop-blur-sm border-b-2 border-neon-cyan/40 px-4 py-6">
           <div className="flex flex-col items-center gap-4 max-w-5xl mx-auto">
             <div className="flex items-center gap-3 text-neon-cyan text-2xl font-bold">
               <Clock className="w-8 h-8" />
               <span>训练完成！用时 {formatTime(timerSeconds)}</span>
             </div>
-            <div className="flex gap-4">
+            <div className="flex gap-4 flex-wrap justify-center">
               <button
                 onClick={continueTraining}
-                className="px-8 py-4 bg-neon-cyan/30 hover:bg-neon-cyan/40 rounded-2xl text-neon-cyan text-xl font-bold transition-colors"
+                className="px-8 py-4 bg-neon-cyan/30 hover:bg-neon-cyan/40 rounded-2xl text-neon-cyan text-xl font-bold transition-colors border-2 border-neon-cyan/40"
               >
                 继续训练
               </button>
               <button
                 onClick={handleBack}
-                className="px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl text-white text-xl font-bold transition-colors"
+                className="px-8 py-4 bg-white/10 hover:bg-white/20 rounded-2xl text-white text-xl font-bold transition-colors border-2 border-white/20"
               >
                 返回首页
               </button>
@@ -224,15 +229,15 @@ export default function ControlBar() {
       )}
 
       {!timerCompleted && (
-        <div className="bg-black/80 backdrop-blur-xl border-t border-white/10">
+        <div className="bg-black/80 backdrop-blur-xl border-t-2 border-white/10">
           {!controlsExpanded ? (
-            <div className="flex items-center justify-center gap-4 px-4 py-3">
+            <div className="flex items-center justify-center gap-4 px-4 py-3 flex-wrap">
               <button
                 onClick={handleBack}
-                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10"
+                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10 text-lg"
               >
                 <ArrowLeft className="w-6 h-6" />
-                <span className="text-base">返回</span>
+                <span>返回</span>
               </button>
 
               <button
@@ -249,15 +254,15 @@ export default function ControlBar() {
 
               <button
                 onClick={toggleExpand}
-                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10"
+                className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10 text-lg"
               >
                 <ChevronUp className="w-6 h-6" />
-                <span className="text-base">更多</span>
+                <span>更多</span>
               </button>
             </div>
           ) : (
             <div className="flex flex-col items-center gap-3 px-4 py-4 max-w-5xl mx-auto">
-              <div className="flex items-center justify-center gap-3 w-full">
+              <div className="flex items-center justify-center gap-3 w-full flex-wrap">
                 {MODES.map((m) => (
                   <button
                     key={m.key}
@@ -277,16 +282,16 @@ export default function ControlBar() {
               </div>
 
               <div className="flex items-center justify-center gap-4 w-full flex-wrap">
-                <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3">
-                  <span className="text-white/60 text-base w-10">速度</span>
+                <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border-2 border-white/10">
+                  <span className="text-white/70 text-lg w-12">速度</span>
                   {SPEED_PRESETS.map((preset) => {
-                    const isActive = Math.abs(speed - preset.value) < 0.05
+                    const isActive = Math.abs(speed - preset.value) < 0.15
                     return (
                       <button
                         key={preset.label}
                         onClick={() => handleSpeedChange(preset.value, preset.label)}
                         className={`
-                          px-6 py-2 rounded-xl text-lg font-medium transition-all min-w-[60px]
+                          px-6 py-3 rounded-xl text-lg font-medium transition-all min-w-[64px]
                           ${isActive
                             ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40'
                             : 'text-white/50 hover:text-white/80 border-2 border-transparent hover:bg-white/5'
@@ -299,16 +304,16 @@ export default function ControlBar() {
                   })}
                 </div>
 
-                <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3">
-                  <span className="text-white/60 text-base w-10">亮度</span>
+                <div className="flex items-center gap-2 bg-white/5 rounded-2xl px-4 py-3 border-2 border-white/10">
+                  <span className="text-white/70 text-lg w-12">亮度</span>
                   {BRIGHTNESS_PRESETS.map((preset) => {
-                    const isActive = Math.abs(brightness - preset.value) < 0.05
+                    const isActive = Math.abs(brightness - preset.value) < 0.1
                     return (
                       <button
                         key={preset.label}
                         onClick={() => handleBrightnessChange(preset.value, preset.label)}
                         className={`
-                          px-6 py-2 rounded-xl text-lg font-medium transition-all min-w-[60px]
+                          px-6 py-3 rounded-xl text-lg font-medium transition-all min-w-[64px]
                           ${isActive
                             ? 'bg-neon-gold/20 text-neon-gold border-2 border-neon-gold/40'
                             : 'text-white/50 hover:text-white/80 border-2 border-transparent hover:bg-white/5'
@@ -325,10 +330,10 @@ export default function ControlBar() {
               <div className="flex items-center justify-center gap-3 w-full flex-wrap">
                 <button
                   onClick={handleBack}
-                  className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10"
+                  className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10 text-lg"
                 >
                   <ArrowLeft className="w-6 h-6" />
-                  <span className="text-base">返回</span>
+                  <span>返回</span>
                 </button>
 
                 <button
@@ -345,10 +350,10 @@ export default function ControlBar() {
 
                 <button
                   onClick={toggleVoice}
-                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${
+                  className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all text-lg ${
                     settings.voiceEnabled
                       ? 'bg-neon-cyan/20 text-neon-cyan border-2 border-neon-cyan/40 hover:bg-neon-cyan/30'
-                      : 'text-white/40 hover:text-white/70 hover:bg-white/10'
+                      : 'text-white/40 hover:text-white/70 hover:bg-white/10 border-2 border-transparent'
                   }`}
                 >
                   {settings.voiceEnabled ? (
@@ -356,13 +361,18 @@ export default function ControlBar() {
                   ) : (
                     <VolumeX className="w-6 h-6" />
                   )}
-                  <span className="text-base">{settings.voiceEnabled ? '语音开' : '语音关'}</span>
+                  <span>{settings.voiceEnabled ? '语音开' : '语音关'}</span>
                 </button>
 
                 <div className="relative">
                   <button
-                    onClick={() => !timerActive && setShowTimerMenu(!showTimerMenu)}
-                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all ${
+                    onClick={() => {
+                      if (!timerActive) {
+                        setShowTimerMenu(!showTimerMenu)
+                        speak('计时')
+                      }
+                    }}
+                    className={`flex items-center gap-2 px-5 py-3 rounded-2xl transition-all text-lg ${
                       timerActive
                         ? 'bg-neon-magenta/20 text-neon-magenta border-2 border-neon-magenta/40'
                         : showTimerMenu
@@ -371,26 +381,32 @@ export default function ControlBar() {
                     }`}
                   >
                     <Clock className="w-6 h-6" />
-                    <span className="text-base">计时</span>
+                    <span>{timerActive ? `${Math.ceil((settings.timerMinutes * 60 - timerSeconds) / 60)}分` : '计时'}</span>
                   </button>
 
                   {showTimerMenu && !timerActive && (
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2">
-                      <div className="bg-black/95 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                        <div className="text-white/60 text-base mb-3 text-center">选择时长</div>
-                        <div className="grid grid-cols-2 gap-3">
-                          {TIMER_OPTIONS.map((opt) => (
-                            <button
-                              key={opt.minutes}
-                              onClick={() => startTimer(opt.minutes)}
-                              className="px-6 py-4 rounded-xl text-white text-lg font-medium transition-all bg-white/10 hover:bg-white/20 hover:text-white"
-                            >
-                              {opt.label}
-                            </button>
-                          ))}
+                    <>
+                      <div
+                        className="fixed inset-0 z-40"
+                        onClick={() => setShowTimerMenu(false)}
+                      />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50">
+                        <div className="bg-black/95 backdrop-blur-xl border-2 border-white/20 rounded-2xl p-4 shadow-2xl min-w-[200px]">
+                          <div className="text-white/70 text-lg mb-3 text-center">选择时长</div>
+                          <div className="grid grid-cols-2 gap-3">
+                            {TIMER_OPTIONS.map((opt) => (
+                              <button
+                                key={opt.minutes}
+                                onClick={() => startTimer(opt.minutes)}
+                                className="px-6 py-4 rounded-xl text-white text-xl font-bold transition-all bg-white/10 hover:bg-white/20 hover:text-white border-2 border-transparent hover:border-neon-magenta/40"
+                              >
+                                {opt.label}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </>
                   )}
                 </div>
 
@@ -398,10 +414,10 @@ export default function ControlBar() {
 
                 <button
                   onClick={toggleExpand}
-                  className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10"
+                  className="flex items-center gap-2 text-white/70 hover:text-white transition-colors px-5 py-3 rounded-2xl hover:bg-white/10 text-lg"
                 >
                   <ChevronDown className="w-6 h-6" />
-                  <span className="text-base">收起</span>
+                  <span>收起</span>
                 </button>
               </div>
             </div>
